@@ -29,12 +29,11 @@ export default function HomePage() {
       const tenantId = crypto.randomUUID();
       const userId = crypto.randomUUID();
       const sessionId = crypto.randomUUID();
-      const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString();
 
       await database.execute('INSERT INTO tenant (id, name, created_at) VALUES ($1, $2, $3)', [tenantId, organization.trim(), now]);
       await database.execute('INSERT INTO app_user (id, tenant_id, email, display_name, created_at) VALUES ($1, $2, $3, $4, $5)', [userId, tenantId, adminEmail.trim(), adminEmail.trim(), now]);
       await database.execute('UPDATE admin_bootstrap SET tenant_id = $1, user_id = $2, completed_at = $3 WHERE id = 1', [tenantId, userId, now]);
-      await database.execute('INSERT INTO session (id, tenant_id, user_id, issued_at, expires_at) VALUES ($1, $2, $3, $4, $5)', [sessionId, tenantId, userId, now, expiresAt]);
+      await database.execute('INSERT INTO session (id, tenant_id, user_id, issued_at, expires_at) VALUES ($1, $2, $3, $4, $5)', [sessionId, tenantId, userId, now, null]);
       setStatus('Administrator bootstrap and local session saved');
     } catch {
       setStatus('Open PRD Software inside Tauri to save the local bootstrap');
