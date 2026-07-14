@@ -1,0 +1,8 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "PRD Software",
+  "version": "0.1.0",
+  "identifier": "com.prdsoftware.desktop",
+  "build": { "frontendDist": "../dist" },
+  "app": { "windows": [{ "title": "PRD Software", "width": 1440, "height": 900 }] }
+}
