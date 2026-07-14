@@ -214,7 +214,7 @@ export default function HomePage() {
 
       <section aria-label="User management" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
         <h2>Organization users</h2>
-        <p style={{ color: '#667085' }}>Create users and assign role and account status.</p>
+        <p style={{ color: '#667085' }}>Create users and assign role and account status. Email is optional for desktop-only users, but adding one is encouraged for notifications and identification.</p>
         <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
           <input aria-label="User email" placeholder="User email" type="email" value={userEmail} onChange={(event) => setUserEmail(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
           <input aria-label="Display name" placeholder="Display name" value={userDisplayName} onChange={(event) => setUserDisplayName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
@@ -230,8 +230,8 @@ export default function HomePage() {
             <option value="suspended">Suspended</option>
           </select>
           <button type="button" onClick={async () => {
-            if (!userEmail.trim() || !userDisplayName.trim()) {
-              setUserStatusMessage('Email and display name are required');
+            if (!userDisplayName.trim()) {
+              setUserStatusMessage('Display name is required; email is optional but encouraged');
               return;
             }
             try {
