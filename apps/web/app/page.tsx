@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Database from '@tauri-apps/plugin-sql';
 import { LocalUserDirectory } from '../user-directory';
+import { LocalCrmDirectory } from '../crm-directory';
 
 const cards = [
   ['Revenue', '—', 'Connect finance data'],
@@ -29,6 +30,12 @@ export default function HomePage() {
   const [userStatusMessage, setUserStatusMessage] = useState('User management pending');
   const [users, setUsers] = useState<readonly { id: string; email: string; displayName: string; status: string }[]>([]);
   const [usersStatus, setUsersStatus] = useState('User list not loaded');
+  const [crmOrganizationName, setCrmOrganizationName] = useState('');
+  const [crmContactFirstName, setCrmContactFirstName] = useState('');
+  const [crmContactLastName, setCrmContactLastName] = useState('');
+  const [crmStatus, setCrmStatus] = useState('CRM not loaded');
+  const [crmOrganizations, setCrmOrganizations] = useState<readonly { id: string; name: string }[]>([]);
+  const [crmContacts, setCrmContacts] = useState<readonly { id: string; firstName: string; lastName: string }[]>([]);
 
   useEffect(() => {
     void (async () => {
@@ -278,6 +285,60 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+
+      <section aria-label="CRM" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>CRM contacts and organizations</h2>
+        <p style={{ color: '#667085' }}>Manage tenant-scoped organizations and contacts locally.</p>
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+          <input aria-label="CRM organization name" placeholder="Organization name" value={crmOrganizationName} onChange={(event) => setCrmOrganizationName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId || !crmOrganizationName.trim()) throw new Error('crm_context_required');
+              await new LocalCrmDirectory().createOrganization({ tenantId, name: crmOrganizationName.trim() });
+              setCrmOrganizationName('');
+              setCrmStatus('Organization saved');
+            } catch {
+              setCrmStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Save organization</button>
+          <input aria-label="CRM contact first name" placeholder="Contact first name" value={crmContactFirstName} onChange={(event) => setCrmContactFirstName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <input aria-label="CRM contact last name" placeholder="Contact last name" value={crmContactLastName} onChange={(event) => setCrmContactLastName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId || !crmContactFirstName.trim() || !crmContactLastName.trim()) throw new Error('crm_context_required');
+              await new LocalCrmDirectory().createContact({ tenantId, firstName: crmContactFirstName.trim(), lastName: crmContactLastName.trim() });
+              setCrmContactFirstName('');
+              setCrmContactLastName('');
+              setCrmStatus('Contact saved');
+            } catch {
+              setCrmStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#344054', color: 'white', padding: '10px 16px' }}>Save contact</button>
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId) throw new Error('crm_context_required');
+              const directory = new LocalCrmDirectory();
+              setCrmOrganizations((await directory.listOrganizations(tenantId)).map(({ id, name }) => ({ id, name })));
+              setCrmContacts((await directory.listContacts(tenantId)).map(({ id, firstName, lastName }) => ({ id, firstName, lastName })));
+              setCrmStatus('CRM data loaded');
+            } catch {
+              setCrmStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load CRM data</button>
+          <small role="status" style={{ color: '#667085' }}>{crmStatus}</small>
+          <small>Organizations: {crmOrganizations.length} · Contacts: {crmContacts.length}</small>
         </div>
       </section>
 
