@@ -1,3 +1,4 @@
+[README .md](https://github.com/user-attachments/files/30007892/README.md)
 # PRD Software
 
 PRD Software is a custom, all-in-one business operations platform combining CRM, HR, ERP, POS, IMS, OMS, SCM, accounting, finance, document management, and secure cloud file sharing.
