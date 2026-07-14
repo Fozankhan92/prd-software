@@ -14,6 +14,14 @@ async function connectDesktopRuntime() {
     document.documentElement.dataset.localStoreStatus = localStore;
 
     const database = await Database.load('sqlite:prd.sqlite');
+    const sessionColumns = await database.select<{ name: string; notnull: number }[]>('PRAGMA table_info(session)');
+    const expiresAtColumn = sessionColumns.find((column) => column.name === 'expires_at');
+    if (expiresAtColumn?.notnull === 1) {
+      await database.execute('ALTER TABLE session RENAME TO session_legacy');
+      await database.execute('CREATE TABLE session (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, user_id TEXT NOT NULL, issued_at TEXT NOT NULL, expires_at TEXT, revoked_at TEXT)');
+      await database.execute('INSERT INTO session (id, tenant_id, user_id, issued_at, expires_at, revoked_at) SELECT id, tenant_id, user_id, issued_at, expires_at, revoked_at FROM session_legacy');
+      await database.execute('DROP TABLE session_legacy');
+    }
     const migrations = [
       'CREATE TABLE IF NOT EXISTS app_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
       'CREATE TABLE IF NOT EXISTS tenant (id TEXT PRIMARY KEY, name TEXT NOT NULL, created_at TEXT NOT NULL)',
