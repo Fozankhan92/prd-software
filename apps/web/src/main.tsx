@@ -27,6 +27,8 @@ async function connectDesktopRuntime() {
     }
     const migrations = [
       'CREATE TABLE IF NOT EXISTS app_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
+      'CREATE TABLE IF NOT EXISTS crm_organization (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, name TEXT NOT NULL, email TEXT, phone TEXT, created_at TEXT NOT NULL)',
+      'CREATE TABLE IF NOT EXISTS crm_contact (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, organization_id TEXT, first_name TEXT NOT NULL, last_name TEXT NOT NULL, email TEXT, phone TEXT, created_at TEXT NOT NULL)',
       'CREATE TABLE IF NOT EXISTS tenant (id TEXT PRIMARY KEY, name TEXT NOT NULL, created_at TEXT NOT NULL)',
       "CREATE TABLE IF NOT EXISTS app_user (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, email TEXT NOT NULL, display_name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'staff', status TEXT NOT NULL DEFAULT 'active', created_at TEXT NOT NULL)",
       'CREATE TABLE IF NOT EXISTS session (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, user_id TEXT NOT NULL, issued_at TEXT NOT NULL, expires_at TEXT, revoked_at TEXT)',
@@ -36,10 +38,10 @@ async function connectDesktopRuntime() {
       'CREATE TABLE IF NOT EXISTS admin_bootstrap (id INTEGER PRIMARY KEY CHECK (id = 1), tenant_id TEXT, user_id TEXT, completed_at TEXT)',
     ];
     for (const migration of migrations) await database.execute(migration);
-    await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('schema_version', '6')");
+    await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('schema_version', '7')");
     await database.execute('INSERT OR IGNORE INTO admin_bootstrap (id) VALUES (1)');
     document.documentElement.dataset.database = 'connected';
-    document.documentElement.dataset.schemaVersion = '6';
+    document.documentElement.dataset.schemaVersion = '7';
   } catch {
     // Native commands and local storage run only inside the Tauri desktop shell.
   }
