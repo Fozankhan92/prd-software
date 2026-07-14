@@ -4,8 +4,8 @@
   "private": true,
   "description": "Desktop-only React interface embedded in the PRD Software Tauri application",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "vite build",
+    "dev": "vite --config src/vite.config.ts --host 127.0.0.1",
+    "build": "vite build --config src/vite.config.ts",
     "lint": "tsc --noEmit",
     "test": "vitest run"
   },
