@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Database from '@tauri-apps/plugin-sql';
+import { LocalUserDirectory } from '../user-directory';
 
 const cards = [
   ['Revenue', '—', 'Connect finance data'],
@@ -26,6 +27,8 @@ export default function HomePage() {
   const [userRole, setUserRole] = useState<'staff' | 'manager' | 'department_admin' | 'organization_admin'>('staff');
   const [userStatus, setUserStatus] = useState<'active' | 'invited' | 'suspended'>('active');
   const [userStatusMessage, setUserStatusMessage] = useState('User management pending');
+  const [users, setUsers] = useState<readonly { id: string; email: string; displayName: string; status: string }[]>([]);
+  const [usersStatus, setUsersStatus] = useState('User list not loaded');
 
   useEffect(() => {
     void (async () => {
@@ -248,6 +251,33 @@ export default function HomePage() {
             }
           }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Save user</button>
           <small role="status" style={{ color: '#667085' }}>{userStatusMessage}</small>
+        </div>
+        <div style={{ marginTop: 24 }}>
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId) throw new Error('organization_required');
+              const directory = new LocalUserDirectory();
+              setUsers(await directory.list(tenantId));
+              setUsersStatus('User list loaded');
+            } catch {
+              setUsersStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load users</button>
+          <small role="status" style={{ display: 'block', color: '#667085', marginTop: 8 }}>{usersStatus}</small>
+          <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
+            {users.map((user) => (
+              <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eaecf0', padding: '10px 0' }}>
+                <span>{user.displayName} · {user.email} · {user.status}</span>
+                <button type="button" onClick={async () => {
+                  await new LocalUserDirectory().setStatus(user.id, user.status === 'suspended' ? 'active' : 'suspended');
+                  setUsers((current) => current.map((item) => item.id === user.id ? { ...item, status: item.status === 'suspended' ? 'active' : 'suspended' } : item));
+                }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '6px 10px' }}>{user.status === 'suspended' ? 'Reactivate' : 'Suspend'}</button>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
