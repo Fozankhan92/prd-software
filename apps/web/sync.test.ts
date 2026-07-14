@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LocalCloudSyncQueue } from './sync';
+import { LocalCloudSyncQueue, withSyncRetry } from './sync';
 import type { CloudSyncAdapter, LocalStore, TenantRecord } from './storage';
 
 const record: TenantRecord = {
@@ -38,5 +38,18 @@ describe('LocalCloudSyncQueue', () => {
     const result = await new LocalCloudSyncQueue(localStore([record]), cloud).run('tenant-a');
     expect(pushed).toEqual([record]);
     expect(result).toEqual({ pushed: 1, pulled: 0, conflicts: [] });
+  });
+});
+
+
+describe('withSyncRetry', () => {
+  it('retries transient failures before succeeding', async () => {
+    let calls = 0;
+    await expect(withSyncRetry(async () => {
+      calls += 1;
+      if (calls < 3) throw new Error('temporary_failure');
+      return 'ok';
+    })).resolves.toBe('ok');
+    expect(calls).toBe(3);
   });
 });
