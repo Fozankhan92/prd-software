@@ -22,11 +22,13 @@ async function connectDesktopRuntime() {
       'CREATE TABLE IF NOT EXISTS permission_grant (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, subject_id TEXT NOT NULL, resource_type TEXT NOT NULL, resource_id TEXT NOT NULL, action TEXT NOT NULL, effect TEXT NOT NULL, created_at TEXT NOT NULL)',
       'CREATE TABLE IF NOT EXISTS audit_event (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, actor_id TEXT NOT NULL, action TEXT NOT NULL, resource_type TEXT NOT NULL, resource_id TEXT NOT NULL, occurred_at TEXT NOT NULL)',
       'CREATE TABLE IF NOT EXISTS file_metadata (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, owner_id TEXT NOT NULL, name TEXT NOT NULL, storage_key TEXT NOT NULL, created_at TEXT NOT NULL)',
+      'CREATE TABLE IF NOT EXISTS admin_bootstrap (id INTEGER PRIMARY KEY CHECK (id = 1), tenant_id TEXT, user_id TEXT, completed_at TEXT)',
     ];
     for (const migration of migrations) await database.execute(migration);
-    await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('schema_version', '3')");
+    await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('schema_version', '4')");
+    await database.execute('INSERT OR IGNORE INTO admin_bootstrap (id) VALUES (1)');
     document.documentElement.dataset.database = 'connected';
-    document.documentElement.dataset.schemaVersion = '3';
+    document.documentElement.dataset.schemaVersion = '4';
   } catch {
     // Native commands and local storage run only inside the Tauri desktop shell.
   }
