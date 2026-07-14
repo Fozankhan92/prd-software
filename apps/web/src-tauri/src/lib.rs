@@ -5,10 +5,15 @@ fn foundation_status() -> &'static str {
     "local-foundation-ready"
 }
 
+#[tauri::command]
+fn local_store_status() -> &'static str {
+    "encrypted-local-store-pending"
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![foundation_status])
+        .invoke_handler(tauri::generate_handler![foundation_status, local_store_status])
         .run(tauri::generate_context!())
         .expect("error while running PRD Software");
 }
