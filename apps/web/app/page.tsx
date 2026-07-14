@@ -16,6 +16,7 @@ export default function HomePage() {
   const [organization, setOrganization] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [status, setStatus] = useState('Admin setup pending');
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [permissionSubject, setPermissionSubject] = useState('');
   const [permissionResource, setPermissionResource] = useState('');
   const [permissionAction, setPermissionAction] = useState<'read' | 'edit'>('read');
@@ -38,6 +39,7 @@ export default function HomePage() {
       await database.execute('INSERT INTO app_user (id, tenant_id, email, display_name, created_at) VALUES ($1, $2, $3, $4, $5)', [userId, tenantId, adminEmail.trim(), adminEmail.trim(), now]);
       await database.execute('UPDATE admin_bootstrap SET tenant_id = $1, user_id = $2, completed_at = $3 WHERE id = 1', [tenantId, userId, now]);
       await database.execute('INSERT INTO session (id, tenant_id, user_id, issued_at, expires_at) VALUES ($1, $2, $3, $4, $5)', [sessionId, tenantId, userId, now, null]);
+      setCurrentSessionId(sessionId);
       setStatus('Administrator bootstrap and local session saved');
     } catch {
       setStatus('Open PRD Software inside Tauri to save the local bootstrap');
@@ -109,6 +111,19 @@ export default function HomePage() {
           <button type="button" onClick={grantPermission} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#344054', color: 'white', padding: '10px 16px' }}>Grant permission</button>
           <small role="status" style={{ color: '#667085' }}>{permissionStatus}</small>
         </div>
+      </section>
+
+
+      <section aria-label="Session controls" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>Session controls</h2>
+        <p style={{ color: '#667085' }}>Sessions remain active until explicitly closed or revoked.</p>
+        <button type="button" disabled={!currentSessionId} onClick={async () => {
+          if (!currentSessionId) return;
+          const database = await Database.load('sqlite:prd.sqlite');
+          await database.execute('UPDATE session SET revoked_at = $1 WHERE id = $2', [new Date().toISOString(), currentSessionId]);
+          setCurrentSessionId(null);
+          setStatus('Local session closed');
+        }} style={{ border: 0, borderRadius: 8, background: '#b42318', color: 'white', padding: '10px 16px' }}>Close current session</button>
       </section>
 
       <section aria-label="Modules" style={{ marginTop: 40 }}>
