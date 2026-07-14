@@ -5,10 +5,14 @@ import HomePage from '../app/page';
 
 async function connectDesktopRuntime() {
   try {
-    const status = await invoke<string>('foundation_status');
-    document.documentElement.dataset.foundationStatus = status;
+    const [foundation, localStore] = await Promise.all([
+      invoke<string>('foundation_status'),
+      invoke<string>('local_store_status'),
+    ]);
+    document.documentElement.dataset.foundationStatus = foundation;
+    document.documentElement.dataset.localStoreStatus = localStore;
   } catch {
-    // The UI can be type-checked outside Tauri, but native commands run only in the desktop shell.
+    // Native commands run only inside the Tauri desktop shell.
   }
 }
 
