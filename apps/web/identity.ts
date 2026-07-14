@@ -14,7 +14,7 @@ export interface Session {
   tenantId: string;
   userId: string;
   issuedAt: string;
-  expiresAt: string;
+  expiresAt: string | null;
   revokedAt?: string;
 }
 
