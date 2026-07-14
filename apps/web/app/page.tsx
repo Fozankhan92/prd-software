@@ -6,6 +6,8 @@ import { LocalUserDirectory } from '../user-directory';
 import { LocalCrmDirectory } from '../crm-directory';
 import { LocalHrDirectory } from '../hr-directory';
 import { LocalErpDirectory } from '../erp-directory';
+import { LocalOmsDirectory } from '../oms-directory';
+import { LocalScmDirectory } from '../scm-directory';
 
 const cards = [
   ['Revenue', '—', 'Connect finance data'],
@@ -48,6 +50,9 @@ export default function HomePage() {
   const [erpItems, setErpItems] = useState<readonly { id: string; name: string }[]>([]);
   const [erpSuppliers, setErpSuppliers] = useState<readonly { id: string; name: string }[]>([]);
   const [erpPurchaseOrders, setErpPurchaseOrders] = useState<readonly { id: string; status: string }[]>([]);
+  const [omsStatus, setOmsStatus] = useState('OMS/SCM not loaded');
+  const [omsOrders, setOmsOrders] = useState<readonly { id: string; status: string }[]>([]);
+  const [scmShipments, setScmShipments] = useState<readonly { id: string; status: string }[]>([]);
 
   useEffect(() => {
     void (async () => {
@@ -429,6 +434,27 @@ export default function HomePage() {
         }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load ERP data</button>
         <small role="status" style={{ display: 'block', color: '#667085', marginTop: 8 }}>{erpStatus}</small>
         <small>Items: {erpItems.length} · Suppliers: {erpSuppliers.length} · Purchase orders: {erpPurchaseOrders.length}</small>
+      </section>
+
+
+      <section aria-label="OMS and SCM" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>OMS orders and SCM shipments</h2>
+        <p style={{ color: '#667085' }}>Track generic orders and shipment progress for this organization.</p>
+        <button type="button" onClick={async () => {
+          try {
+            const database = await Database.load('sqlite:prd.sqlite');
+            const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+            const tenantId = metadata[0]?.value;
+            if (!tenantId) throw new Error('oms_context_required');
+            setOmsOrders((await new LocalOmsDirectory().listOrders(tenantId)).map(({ id, status }) => ({ id, status })));
+            setScmShipments((await new LocalScmDirectory().listShipments(tenantId)).map(({ id, status }) => ({ id, status })));
+            setOmsStatus('OMS/SCM data loaded');
+          } catch {
+            setOmsStatus('Complete administrator setup inside Tauri first');
+          }
+        }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load OMS/SCM data</button>
+        <small role="status" style={{ display: 'block', color: '#667085', marginTop: 8 }}>{omsStatus}</small>
+        <small>Orders: {omsOrders.length} · Shipments: {scmShipments.length}</small>
       </section>
 
       <section aria-label="Modules" style={{ marginTop: 40 }}>
