@@ -3,6 +3,20 @@
   "productName": "PRD Software",
   "version": "0.1.0",
   "identifier": "com.prdsoftware.desktop",
-  "build": { "frontendDist": "../dist" },
-  "app": { "windows": [{ "title": "PRD Software", "width": 1440, "height": 900 }] }
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:3000",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../out"
+  },
+  "app": {
+    "windows": [{
+      "title": "PRD Software",
+      "width": 1440,
+      "height": 900,
+      "minWidth": 1024,
+      "minHeight": 700
+    }]
+  },
+  "bundle": {"active": false}
 }
