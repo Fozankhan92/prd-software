@@ -14,6 +14,9 @@ async function connectDesktopRuntime() {
     document.documentElement.dataset.localStoreStatus = localStore;
 
     const database = await Database.load('sqlite:prd.sqlite');
+    const userColumns = await database.select<{ name: string }[]>('PRAGMA table_info(app_user)');
+    if (userColumns.length && !userColumns.some((column) => column.name === 'role')) await database.execute("ALTER TABLE app_user ADD COLUMN role TEXT NOT NULL DEFAULT 'staff'");
+    if (userColumns.length && !userColumns.some((column) => column.name === 'status')) await database.execute("ALTER TABLE app_user ADD COLUMN status TEXT NOT NULL DEFAULT 'active'");
     const sessionColumns = await database.select<{ name: string; notnull: number }[]>('PRAGMA table_info(session)');
     const expiresAtColumn = sessionColumns.find((column) => column.name === 'expires_at');
     if (expiresAtColumn?.notnull === 1) {
@@ -25,7 +28,7 @@ async function connectDesktopRuntime() {
     const migrations = [
       'CREATE TABLE IF NOT EXISTS app_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
       'CREATE TABLE IF NOT EXISTS tenant (id TEXT PRIMARY KEY, name TEXT NOT NULL, created_at TEXT NOT NULL)',
-      'CREATE TABLE IF NOT EXISTS app_user (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, email TEXT NOT NULL, display_name TEXT NOT NULL, created_at TEXT NOT NULL)',
+      'CREATE TABLE IF NOT EXISTS app_user (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, email TEXT NOT NULL, display_name TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'staff', status TEXT NOT NULL DEFAULT 'active', created_at TEXT NOT NULL)',
       'CREATE TABLE IF NOT EXISTS session (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, user_id TEXT NOT NULL, issued_at TEXT NOT NULL, expires_at TEXT, revoked_at TEXT)',
       'CREATE TABLE IF NOT EXISTS permission_grant (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, subject_id TEXT NOT NULL, resource_type TEXT NOT NULL, resource_id TEXT NOT NULL, action TEXT NOT NULL, effect TEXT NOT NULL, created_at TEXT NOT NULL)',
       'CREATE TABLE IF NOT EXISTS audit_event (id TEXT PRIMARY KEY, tenant_id TEXT NOT NULL, actor_id TEXT NOT NULL, action TEXT NOT NULL, resource_type TEXT NOT NULL, resource_id TEXT NOT NULL, occurred_at TEXT NOT NULL)',
@@ -33,10 +36,10 @@ async function connectDesktopRuntime() {
       'CREATE TABLE IF NOT EXISTS admin_bootstrap (id INTEGER PRIMARY KEY CHECK (id = 1), tenant_id TEXT, user_id TEXT, completed_at TEXT)',
     ];
     for (const migration of migrations) await database.execute(migration);
-    await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('schema_version', '5')");
+    await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('schema_version', '6')");
     await database.execute('INSERT OR IGNORE INTO admin_bootstrap (id) VALUES (1)');
     document.documentElement.dataset.database = 'connected';
-    document.documentElement.dataset.schemaVersion = '5';
+    document.documentElement.dataset.schemaVersion = '6';
   } catch {
     // Native commands and local storage run only inside the Tauri desktop shell.
   }
