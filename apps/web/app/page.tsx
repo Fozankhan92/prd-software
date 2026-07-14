@@ -43,6 +43,7 @@ export default function HomePage() {
       await database.execute('INSERT INTO app_user (id, tenant_id, email, display_name, created_at) VALUES ($1, $2, $3, $4, $5)', [userId, tenantId, adminEmail.trim(), adminEmail.trim(), now]);
       await database.execute('UPDATE admin_bootstrap SET tenant_id = $1, user_id = $2, completed_at = $3 WHERE id = 1', [tenantId, userId, now]);
       await database.execute('INSERT INTO session (id, tenant_id, user_id, issued_at, expires_at) VALUES ($1, $2, $3, $4, $5)', [sessionId, tenantId, userId, now, null]);
+      await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('current_session_id', $1)", [sessionId]);
       setCurrentSessionId(sessionId);
       setStatus('Administrator bootstrap and local session saved');
     } catch {
@@ -137,6 +138,7 @@ export default function HomePage() {
                 setResumeStatus('Session is unavailable');
                 return;
               }
+              await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('current_session_id', $1)", [session.id]);
               setCurrentSessionId(session.id);
               setResumeStatus('Local session resumed');
             } catch {
@@ -154,6 +156,7 @@ export default function HomePage() {
           if (!currentSessionId) return;
           const database = await Database.load('sqlite:prd.sqlite');
           await database.execute('UPDATE session SET revoked_at = $1 WHERE id = $2', [new Date().toISOString(), currentSessionId]);
+          await database.execute("DELETE FROM app_metadata WHERE key = 'current_session_id'");
           setCurrentSessionId(null);
           setStatus('Local session closed');
         }} style={{ border: 0, borderRadius: 8, background: '#b42318', color: 'white', padding: '10px 16px' }}>Close current session</button>
