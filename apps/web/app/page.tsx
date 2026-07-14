@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Database from '@tauri-apps/plugin-sql';
 
 const cards = [
@@ -21,6 +21,24 @@ export default function HomePage() {
   const [resumeStatus, setResumeStatus] = useState('Session resume pending');
   const [revokeSessionId, setRevokeSessionId] = useState('');
   const [revokeStatus, setRevokeStatus] = useState('Admin revocation pending');
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const database = await Database.load('sqlite:prd.sqlite');
+        const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_session_id']);
+        const sessionId = metadata[0]?.value;
+        if (!sessionId) return;
+        const rows = await database.select<{ id: string; revoked_at: string | null; expires_at: string | null }[]>('SELECT id, revoked_at, expires_at FROM session WHERE id = $1', [sessionId]);
+        const session = rows[0];
+        if (!session || session.revoked_at || (session.expires_at && session.expires_at <= new Date().toISOString())) return;
+        setCurrentSessionId(session.id);
+        setResumeStatus('Active local session restored');
+      } catch {
+        // Session restoration runs only inside the Tauri desktop shell.
+      }
+    })();
+  }, []);
   const [permissionSubject, setPermissionSubject] = useState('');
   const [permissionResource, setPermissionResource] = useState('');
   const [permissionAction, setPermissionAction] = useState<'read' | 'edit'>('read');
