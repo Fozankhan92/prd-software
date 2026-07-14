@@ -8,6 +8,7 @@ import { LocalHrDirectory } from '../hr-directory';
 import { LocalErpDirectory } from '../erp-directory';
 import { LocalOmsDirectory } from '../oms-directory';
 import { LocalScmDirectory } from '../scm-directory';
+import { LocalAccountingDirectory } from '../accounting-directory';
 
 const cards = [
   ['Revenue', '—', 'Connect finance data'],
@@ -53,6 +54,10 @@ export default function HomePage() {
   const [omsStatus, setOmsStatus] = useState('OMS/SCM not loaded');
   const [omsOrders, setOmsOrders] = useState<readonly { id: string; status: string }[]>([]);
   const [scmShipments, setScmShipments] = useState<readonly { id: string; status: string }[]>([]);
+  const [financeStatus, setFinanceStatus] = useState('Accounting/finance not loaded');
+  const [accounts, setAccounts] = useState<readonly { id: string; name: string }[]>([]);
+  const [journalEntries, setJournalEntries] = useState<readonly { id: string; description: string }[]>([]);
+  const [budgets, setBudgets] = useState<readonly { id: string; name: string }[]>([]);
 
   useEffect(() => {
     void (async () => {
@@ -455,6 +460,29 @@ export default function HomePage() {
         }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load OMS/SCM data</button>
         <small role="status" style={{ display: 'block', color: '#667085', marginTop: 8 }}>{omsStatus}</small>
         <small>Orders: {omsOrders.length} · Shipments: {scmShipments.length}</small>
+      </section>
+
+
+      <section aria-label="Accounting and finance" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>Accounting and finance</h2>
+        <p style={{ color: '#667085' }}>Load generic accounts, journal entries, and budgets for this organization.</p>
+        <button type="button" onClick={async () => {
+          try {
+            const database = await Database.load('sqlite:prd.sqlite');
+            const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+            const tenantId = metadata[0]?.value;
+            if (!tenantId) throw new Error('finance_context_required');
+            const directory = new LocalAccountingDirectory();
+            setAccounts((await directory.listAccounts(tenantId)).map(({ id, name }) => ({ id, name })));
+            setJournalEntries((await directory.listJournalEntries(tenantId)).map(({ id, description }) => ({ id, description })));
+            setBudgets((await directory.listBudgets(tenantId)).map(({ id, name }) => ({ id, name })));
+            setFinanceStatus('Accounting/finance data loaded');
+          } catch {
+            setFinanceStatus('Complete administrator setup inside Tauri first');
+          }
+        }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load accounting/finance data</button>
+        <small role="status" style={{ display: 'block', color: '#667085', marginTop: 8 }}>{financeStatus}</small>
+        <small>Accounts: {accounts.length} · Journal entries: {journalEntries.length} · Budgets: {budgets.length}</small>
       </section>
 
       <section aria-label="Modules" style={{ marginTop: 40 }}>
