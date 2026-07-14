@@ -17,6 +17,8 @@ export default function HomePage() {
   const [adminEmail, setAdminEmail] = useState('');
   const [status, setStatus] = useState('Admin setup pending');
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [resumeSessionId, setResumeSessionId] = useState('');
+  const [resumeStatus, setResumeStatus] = useState('Session resume pending');
   const [revokeSessionId, setRevokeSessionId] = useState('');
   const [revokeStatus, setRevokeStatus] = useState('Admin revocation pending');
   const [permissionSubject, setPermissionSubject] = useState('');
@@ -115,6 +117,35 @@ export default function HomePage() {
         </div>
       </section>
 
+
+
+      <section aria-label="Local session resume" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>Resume local session</h2>
+        <p style={{ color: '#667085' }}>Reopen a session until it is explicitly closed or revoked.</p>
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+          <input aria-label="Session ID" placeholder="Session ID" value={resumeSessionId} onChange={(event) => setResumeSessionId(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            if (!resumeSessionId.trim()) {
+              setResumeStatus('Session ID is required');
+              return;
+            }
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const rows = await database.select<{ id: string; revoked_at: string | null; expires_at: string | null }[]>('SELECT id, revoked_at, expires_at FROM session WHERE id = $1', [resumeSessionId.trim()]);
+              const session = rows[0];
+              if (!session || session.revoked_at || (session.expires_at && session.expires_at <= new Date().toISOString())) {
+                setResumeStatus('Session is unavailable');
+                return;
+              }
+              setCurrentSessionId(session.id);
+              setResumeStatus('Local session resumed');
+            } catch {
+              setResumeStatus('Open PRD Software inside Tauri to resume sessions');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Resume session</button>
+          <small role="status" style={{ color: '#667085' }}>{resumeStatus}</small>
+        </div>
+      </section>
 
       <section aria-label="Session controls" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
         <h2>Session controls</h2>
