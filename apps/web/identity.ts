@@ -26,3 +26,15 @@ export function assertActiveUser(user: User): void {
 export function canAdminister(user: User): boolean {
   return user.roles.includes('platform_admin') || user.roles.includes('organization_admin');
 }
+
+
+export type UserStatus = User['status'];
+
+export interface UserDirectory {
+  list(tenantId: string): Promise<readonly User[]>;
+  setStatus(userId: string, status: UserStatus): Promise<void>;
+}
+
+export function assertCanManageUsers(user: User): void {
+  if (!canAdminister(user)) throw new Error('user_management_required');
+}
