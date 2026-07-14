@@ -1,4 +1,7 @@
-'use client';
+const ses.               ionId = crypto.randomUUID();
+ const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString();
+ await database.execute('INSERT INTO session (id, tenant_id, user_id, issued_at, expires_at) VALUES ($1, $2, $3, $4, $5)', [sessionId, tenantId, userId, now, expiresAt]);
+ setStatus('Administrator bootstrap saved locally');'use client';
 
 import { useState } from 'react';
 import Database from '@tauri-apps/plugin-sql';
