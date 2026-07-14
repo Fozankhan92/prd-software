@@ -11,9 +11,11 @@ export interface CloudRequestSigner {
 }
 
 export class S3CompatibleCloudFileAdapter implements CloudFileAdapter {
-  readonly enabled = true;
+  readonly enabled: boolean;
 
-  constructor(private readonly signer: CloudRequestSigner) {}
+  constructor(private readonly signer: CloudRequestSigner, enabled = false) {
+    this.enabled = enabled;
+  }
 
   async createUploadRequest(metadata: CloudFileMetadata, permission: FilePermission) {
     const request = await this.signer.signUpload(metadata, permission);
