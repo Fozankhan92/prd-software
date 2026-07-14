@@ -51,8 +51,12 @@ export default function HomePage() {
     }
     try {
       const database = await Database.load('sqlite:prd.sqlite');
-      await database.execute('INSERT INTO permission_grant (id, tenant_id, subject_id, resource_type, resource_id, action, effect, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [crypto.randomUUID(), 'local-bootstrap', permissionSubject.trim(), 'business_record', permissionResource.trim(), permissionAction, 'allow', new Date().toISOString()]);
-      await database.execute('INSERT INTO audit_event (id, tenant_id, actor_id, action, resource_type, resource_id, occurred_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [crypto.randomUUID(), 'local-bootstrap', 'local-admin', 'permission_granted', 'business_record', permissionResource.trim(), new Date().toISOString()]);
+      const bootstrap = await database.select<{ tenant_id: string; user_id: string }[]>('SELECT tenant_id, user_id FROM admin_bootstrap WHERE id = 1');
+      const tenantId = bootstrap[0]?.tenant_id;
+      const actorId = bootstrap[0]?.user_id;
+      if (!tenantId || !actorId) throw new Error('administrator_bootstrap_required');
+      await database.execute('INSERT INTO permission_grant (id, tenant_id, subject_id, resource_type, resource_id, action, effect, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [crypto.randomUUID(), tenantId, permissionSubject.trim(), 'business_record', permissionResource.trim(), permissionAction, 'allow', new Date().toISOString()]);
+      await database.execute('INSERT INTO audit_event (id, tenant_id, actor_id, action, resource_type, resource_id, occurred_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [crypto.randomUUID(), tenantId, actorId, 'permission_granted', 'business_record', permissionResource.trim(), new Date().toISOString()]);
       setPermissionStatus(permissionAction === 'read' ? 'Read-only permission granted' : 'Edit permission granted');
     } catch {
       setPermissionStatus('Open PRD Software inside Tauri to save permissions');
