@@ -137,6 +137,8 @@ export default function HomePage() {
             try {
               const database = await Database.load('sqlite:prd.sqlite');
               await database.execute('UPDATE session SET revoked_at = $1 WHERE id = $2', [new Date().toISOString(), revokeSessionId.trim()]);
+              const revokedAt = new Date().toISOString();
+              await database.execute('INSERT INTO audit_event (id, tenant_id, actor_id, action, resource_type, resource_id, occurred_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [crypto.randomUUID(), 'admin-scope', 'local-admin', 'session_revoked', 'session', revokeSessionId.trim(), revokedAt]);
               setRevokeSessionId('');
               setRevokeStatus('Session revoked by administrator');
             } catch {
