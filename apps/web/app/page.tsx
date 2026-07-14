@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Database from '@tauri-apps/plugin-sql';
 import { LocalUserDirectory } from '../user-directory';
 import { LocalCrmDirectory } from '../crm-directory';
+import { LocalHrDirectory } from '../hr-directory';
 
 const cards = [
   ['Revenue', '—', 'Connect finance data'],
@@ -36,6 +37,12 @@ export default function HomePage() {
   const [crmStatus, setCrmStatus] = useState('CRM not loaded');
   const [crmOrganizations, setCrmOrganizations] = useState<readonly { id: string; name: string }[]>([]);
   const [crmContacts, setCrmContacts] = useState<readonly { id: string; firstName: string; lastName: string }[]>([]);
+  const [hrDepartmentName, setHrDepartmentName] = useState('');
+  const [hrFirstName, setHrFirstName] = useState('');
+  const [hrLastName, setHrLastName] = useState('');
+  const [hrStatus, setHrStatus] = useState('HR not loaded');
+  const [hrDepartments, setHrDepartments] = useState<readonly { id: string; name: string }[]>([]);
+  const [hrEmployees, setHrEmployees] = useState<readonly { id: string; firstName: string; lastName: string }[]>([]);
 
   useEffect(() => {
     void (async () => {
@@ -339,6 +346,60 @@ export default function HomePage() {
           }} style={{ width: 'fit-content', border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load CRM data</button>
           <small role="status" style={{ color: '#667085' }}>{crmStatus}</small>
           <small>Organizations: {crmOrganizations.length} · Contacts: {crmContacts.length}</small>
+        </div>
+      </section>
+
+
+      <section aria-label="HR" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>HR departments and employees</h2>
+        <p style={{ color: '#667085' }}>Manage tenant-scoped departments and employees locally.</p>
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+          <input aria-label="HR department name" placeholder="Department name" value={hrDepartmentName} onChange={(event) => setHrDepartmentName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId || !hrDepartmentName.trim()) throw new Error('hr_context_required');
+              await new LocalHrDirectory().createDepartment({ tenantId, name: hrDepartmentName.trim() });
+              setHrDepartmentName('');
+              setHrStatus('Department saved');
+            } catch {
+              setHrStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Save department</button>
+          <input aria-label="HR employee first name" placeholder="Employee first name" value={hrFirstName} onChange={(event) => setHrFirstName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <input aria-label="HR employee last name" placeholder="Employee last name" value={hrLastName} onChange={(event) => setHrLastName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId || !hrFirstName.trim() || !hrLastName.trim()) throw new Error('hr_context_required');
+              await new LocalHrDirectory().createEmployee({ tenantId, firstName: hrFirstName.trim(), lastName: hrLastName.trim(), employmentStatus: 'active' });
+              setHrFirstName('');
+              setHrLastName('');
+              setHrStatus('Employee saved');
+            } catch {
+              setHrStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#344054', color: 'white', padding: '10px 16px' }}>Save employee</button>
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId) throw new Error('hr_context_required');
+              const directory = new LocalHrDirectory();
+              setHrDepartments((await directory.listDepartments(tenantId)).map(({ id, name }) => ({ id, name })));
+              setHrEmployees((await directory.listEmployees(tenantId)).map(({ id, firstName, lastName }) => ({ id, firstName, lastName })));
+              setHrStatus('HR data loaded');
+            } catch {
+              setHrStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load HR data</button>
+          <small role="status" style={{ color: '#667085' }}>{hrStatus}</small>
+          <small>Departments: {hrDepartments.length} · Employees: {hrEmployees.length}</small>
         </div>
       </section>
 
