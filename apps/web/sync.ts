@@ -2,6 +2,19 @@ import type { CloudSyncAdapter, LocalStore, TenantRecord } from './storage';
 
 export type SyncConflictPolicy = 'reject' | 'last_write_wins';
 
+export async function withSyncRetry<T>(operation: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts - 1) await new Promise((resolve) => setTimeout(resolve, 2 ** attempt * 100));
+    }
+  }
+  throw lastError;
+}
+
 export interface SyncConflict {
   local: TenantRecord;
   remote: TenantRecord;
@@ -24,7 +37,7 @@ export class LocalCloudSyncQueue {
     if (!this.cloud.enabled) return { pushed: 0, pulled: 0, conflicts: [] };
 
     const pending = await this.localStore.pendingSync(tenantId);
-    const remote = await this.cloud.pull(tenantId);
+    const remote = await withSyncRetry(() => this.cloud.pull(tenantId));
     const remoteById = new Map(remote.map((record) => [record.id, record]));
     const conflicts = pending
       .filter((record) => remoteById.has(record.id))
@@ -34,7 +47,7 @@ export class LocalCloudSyncQueue {
       return { pushed: 0, pulled: remote.length, conflicts };
     }
 
-    await this.cloud.push(pending);
+    await withSyncRetry(() => this.cloud.push(pending));
     for (const record of remote) {
       if (this.conflictPolicy === 'last_write_wins' && pending.some((local) => local.id === record.id && local.updatedAt >= record.updatedAt)) continue;
       await this.localStore.put(record);
