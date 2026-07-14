@@ -21,6 +21,11 @@ export default function HomePage() {
   const [resumeStatus, setResumeStatus] = useState('Session resume pending');
   const [revokeSessionId, setRevokeSessionId] = useState('');
   const [revokeStatus, setRevokeStatus] = useState('Admin revocation pending');
+  const [userEmail, setUserEmail] = useState('');
+  const [userDisplayName, setUserDisplayName] = useState('');
+  const [userRole, setUserRole] = useState<'staff' | 'manager' | 'department_admin' | 'organization_admin'>('staff');
+  const [userStatus, setUserStatus] = useState<'active' | 'invited' | 'suspended'>('active');
+  const [userStatusMessage, setUserStatusMessage] = useState('User management pending');
 
   useEffect(() => {
     void (async () => {
@@ -61,6 +66,8 @@ export default function HomePage() {
       await database.execute('INSERT INTO app_user (id, tenant_id, email, display_name, created_at) VALUES ($1, $2, $3, $4, $5)', [userId, tenantId, adminEmail.trim(), adminEmail.trim(), now]);
       await database.execute('UPDATE admin_bootstrap SET tenant_id = $1, user_id = $2, completed_at = $3 WHERE id = 1', [tenantId, userId, now]);
       await database.execute('INSERT INTO session (id, tenant_id, user_id, issued_at, expires_at) VALUES ($1, $2, $3, $4, $5)', [sessionId, tenantId, userId, now, null]);
+      await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('current_tenant_id', $1)", [tenantId]);
+      await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('current_user_id', $1)", [userId]);
       await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('current_session_id', $1)", [sessionId]);
       setCurrentSessionId(sessionId);
       setStatus('Administrator bootstrap and local session saved');
@@ -198,6 +205,49 @@ export default function HomePage() {
             }
           }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#7a271a', color: 'white', padding: '10px 16px' }}>Revoke session</button>
           <small role="status" style={{ color: '#667085' }}>{revokeStatus}</small>
+        </div>
+      </section>
+
+
+      <section aria-label="User management" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>Organization users</h2>
+        <p style={{ color: '#667085' }}>Create users and assign role and account status.</p>
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+          <input aria-label="User email" placeholder="User email" type="email" value={userEmail} onChange={(event) => setUserEmail(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <input aria-label="Display name" placeholder="Display name" value={userDisplayName} onChange={(event) => setUserDisplayName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <select aria-label="User role" value={userRole} onChange={(event) => setUserRole(event.target.value as typeof userRole)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }}>
+            <option value="staff">Staff</option>
+            <option value="manager">Manager</option>
+            <option value="department_admin">Department admin</option>
+            <option value="organization_admin">Organization admin</option>
+          </select>
+          <select aria-label="User status" value={userStatus} onChange={(event) => setUserStatus(event.target.value as typeof userStatus)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }}>
+            <option value="active">Active</option>
+            <option value="invited">Invited</option>
+            <option value="suspended">Suspended</option>
+          </select>
+          <button type="button" onClick={async () => {
+            if (!userEmail.trim() || !userDisplayName.trim()) {
+              setUserStatusMessage('Email and display name are required');
+              return;
+            }
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId) throw new Error('organization_required');
+              const userId = crypto.randomUUID();
+              const now = new Date().toISOString();
+              await database.execute('INSERT INTO app_user (id, tenant_id, email, display_name, role, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [userId, tenantId, userEmail.trim(), userDisplayName.trim(), userRole, userStatus, now]);
+              await database.execute('INSERT INTO audit_event (id, tenant_id, actor_id, action, resource_type, resource_id, occurred_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [crypto.randomUUID(), tenantId, (await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_user_id']))[0]?.value ?? 'unknown', 'user_created', 'app_user', userId, now]);
+              setUserEmail('');
+              setUserDisplayName('');
+              setUserStatusMessage('User created locally');
+            } catch {
+              setUserStatusMessage('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Save user</button>
+          <small role="status" style={{ color: '#667085' }}>{userStatusMessage}</small>
         </div>
       </section>
 
