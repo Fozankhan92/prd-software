@@ -34,3 +34,10 @@ export interface ErpDirectory {
   listSuppliers(tenantId: string): Promise<readonly ErpSupplier[]>;
   listPurchaseOrders(tenantId: string): Promise<readonly ErpPurchaseOrder[]>;
 }
+
+
+export function assertErpTenantContext(record: ErpItem | ErpSupplier | ErpPurchaseOrder): void {
+  if (!record.id || !record.tenantId) throw new Error('erp_tenant_context_required');
+  if ('unitPrice' in record && (!Number.isFinite(record.unitPrice) || record.unitPrice < 0)) throw new Error('erp_unit_price_invalid');
+  if ('totalAmount' in record && (!Number.isFinite(record.totalAmount) || record.totalAmount < 0)) throw new Error('erp_total_amount_invalid');
+}
