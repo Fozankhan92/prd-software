@@ -1,6 +1,8 @@
 {
-  "name": "@prd/desktop",
+  "name": "@prd/desktop-shell",
+  "version": "0.1.0",
   "private": true,
+  "description": "Embedded React interface for the PRD Software Tauri desktop application",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
