@@ -5,6 +5,7 @@ import Database from '@tauri-apps/plugin-sql';
 import { LocalUserDirectory } from '../user-directory';
 import { LocalCrmDirectory } from '../crm-directory';
 import { LocalHrDirectory } from '../hr-directory';
+import { LocalErpDirectory } from '../erp-directory';
 
 const cards = [
   ['Revenue', '—', 'Connect finance data'],
@@ -43,6 +44,10 @@ export default function HomePage() {
   const [hrStatus, setHrStatus] = useState('HR not loaded');
   const [hrDepartments, setHrDepartments] = useState<readonly { id: string; name: string }[]>([]);
   const [hrEmployees, setHrEmployees] = useState<readonly { id: string; firstName: string; lastName: string }[]>([]);
+  const [erpStatus, setErpStatus] = useState('ERP not loaded');
+  const [erpItems, setErpItems] = useState<readonly { id: string; name: string }[]>([]);
+  const [erpSuppliers, setErpSuppliers] = useState<readonly { id: string; name: string }[]>([]);
+  const [erpPurchaseOrders, setErpPurchaseOrders] = useState<readonly { id: string; status: string }[]>([]);
 
   useEffect(() => {
     void (async () => {
@@ -401,6 +406,29 @@ export default function HomePage() {
           <small role="status" style={{ color: '#667085' }}>{hrStatus}</small>
           <small>Departments: {hrDepartments.length} · Employees: {hrEmployees.length}</small>
         </div>
+      </section>
+
+
+      <section aria-label="ERP" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>ERP items, suppliers, and purchasing</h2>
+        <p style={{ color: '#667085' }}>Load generic ERP records for this organization.</p>
+        <button type="button" onClick={async () => {
+          try {
+            const database = await Database.load('sqlite:prd.sqlite');
+            const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+            const tenantId = metadata[0]?.value;
+            if (!tenantId) throw new Error('erp_context_required');
+            const directory = new LocalErpDirectory();
+            setErpItems((await directory.listItems(tenantId)).map(({ id, name }) => ({ id, name })));
+            setErpSuppliers((await directory.listSuppliers(tenantId)).map(({ id, name }) => ({ id, name })));
+            setErpPurchaseOrders((await directory.listPurchaseOrders(tenantId)).map(({ id, status }) => ({ id, status })));
+            setErpStatus('ERP data loaded');
+          } catch {
+            setErpStatus('Complete administrator setup inside Tauri first');
+          }
+        }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load ERP data</button>
+        <small role="status" style={{ display: 'block', color: '#667085', marginTop: 8 }}>{erpStatus}</small>
+        <small>Items: {erpItems.length} · Suppliers: {erpSuppliers.length} · Purchase orders: {erpPurchaseOrders.length}</small>
       </section>
 
       <section aria-label="Modules" style={{ marginTop: 40 }}>
