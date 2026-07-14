@@ -17,6 +17,8 @@ export default function HomePage() {
   const [adminEmail, setAdminEmail] = useState('');
   const [status, setStatus] = useState('Admin setup pending');
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [revokeSessionId, setRevokeSessionId] = useState('');
+  const [revokeStatus, setRevokeStatus] = useState('Admin revocation pending');
   const [permissionSubject, setPermissionSubject] = useState('');
   const [permissionResource, setPermissionResource] = useState('');
   const [permissionAction, setPermissionAction] = useState<'read' | 'edit'>('read');
@@ -124,6 +126,25 @@ export default function HomePage() {
           setCurrentSessionId(null);
           setStatus('Local session closed');
         }} style={{ border: 0, borderRadius: 8, background: '#b42318', color: 'white', padding: '10px 16px' }}>Close current session</button>
+
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520, marginTop: 20 }}>
+          <input aria-label="Session ID to revoke" placeholder="Session ID to revoke" value={revokeSessionId} onChange={(event) => setRevokeSessionId(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            if (!revokeSessionId.trim()) {
+              setRevokeStatus('Session ID is required');
+              return;
+            }
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              await database.execute('UPDATE session SET revoked_at = $1 WHERE id = $2', [new Date().toISOString(), revokeSessionId.trim()]);
+              setRevokeSessionId('');
+              setRevokeStatus('Session revoked by administrator');
+            } catch {
+              setRevokeStatus('Open PRD Software inside Tauri to revoke sessions');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#7a271a', color: 'white', padding: '10px 16px' }}>Revoke session</button>
+          <small role="status" style={{ color: '#667085' }}>{revokeStatus}</small>
+        </div>
       </section>
 
       <section aria-label="Modules" style={{ marginTop: 40 }}>
