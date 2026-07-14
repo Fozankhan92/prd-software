@@ -16,6 +16,10 @@ export default function HomePage() {
   const [organization, setOrganization] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [status, setStatus] = useState('Admin setup pending');
+  const [permissionSubject, setPermissionSubject] = useState('');
+  const [permissionResource, setPermissionResource] = useState('');
+  const [permissionAction, setPermissionAction] = useState<'read' | 'edit'>('read');
+  const [permissionStatus, setPermissionStatus] = useState('Permission assignment pending');
 
   async function bootstrapAdmin() {
     if (!organization.trim() || !adminEmail.trim()) {
@@ -37,6 +41,20 @@ export default function HomePage() {
       setStatus('Administrator bootstrap and local session saved');
     } catch {
       setStatus('Open PRD Software inside Tauri to save the local bootstrap');
+    }
+  }
+
+  async function grantPermission() {
+    if (!permissionSubject.trim() || !permissionResource.trim()) {
+      setPermissionStatus('Subject and resource are required');
+      return;
+    }
+    try {
+      const database = await Database.load('sqlite:prd.sqlite');
+      await database.execute('INSERT INTO permission_grant (id, tenant_id, subject_id, resource_type, resource_id, action, effect, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [crypto.randomUUID(), 'local-bootstrap', permissionSubject.trim(), 'business_record', permissionResource.trim(), permissionAction, 'allow', new Date().toISOString()]);
+      setPermissionStatus(permissionAction === 'read' ? 'Read-only permission granted' : 'Edit permission granted');
+    } catch {
+      setPermissionStatus('Open PRD Software inside Tauri to save permissions');
     }
   }
 
@@ -69,6 +87,22 @@ export default function HomePage() {
           <input aria-label="Administrator email" placeholder="Administrator email" type="email" value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
           <button type="button" onClick={bootstrapAdmin} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Save local administrator</button>
           <small role="status" style={{ color: '#667085' }}>{status}</small>
+        </div>
+      </section>
+
+
+      <section aria-label="Permission assignment" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>Admin permission assignment</h2>
+        <p style={{ color: '#667085' }}>Grant read access first; edit access is a separate approval.</p>
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+          <input aria-label="User or group ID" placeholder="User or group ID" value={permissionSubject} onChange={(event) => setPermissionSubject(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <input aria-label="Resource ID" placeholder="Resource ID" value={permissionResource} onChange={(event) => setPermissionResource(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <select aria-label="Permission level" value={permissionAction} onChange={(event) => setPermissionAction(event.target.value as 'read' | 'edit')} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }}>
+            <option value="read">Read only</option>
+            <option value="edit">Edit approval</option>
+          </select>
+          <button type="button" onClick={grantPermission} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#344054', color: 'white', padding: '10px 16px' }}>Grant permission</button>
+          <small role="status" style={{ color: '#667085' }}>{permissionStatus}</small>
         </div>
       </section>
 
