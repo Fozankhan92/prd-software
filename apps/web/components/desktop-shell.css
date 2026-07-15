@@ -122,3 +122,28 @@
   .desktop-shell__header { padding-inline: 20px; }
   .desktop-shell__content { padding: 20px; }
 }
+
+
+.desktop-workbench__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.desktop-workbench__actions button {
+  border: 1px solid var(--prd-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: var(--prd-surface);
+  color: var(--prd-ink);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.desktop-workbench__actions button:hover,
+.desktop-workbench__actions button:focus-visible {
+  border-color: var(--prd-accent);
+  color: var(--prd-accent);
+  outline: none;
+}
