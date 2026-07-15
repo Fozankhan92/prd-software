@@ -14,7 +14,10 @@ fn local_store_status() -> &'static str {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_sql::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![foundation_status, local_store_status])
+        .invoke_handler(tauri::generate_handler![
+            foundation_status,
+            local_store_status
+        ])
         .run(tauri::generate_context!())
         .expect("error while running PRD Software");
 }
