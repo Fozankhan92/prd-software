@@ -1,6 +1,6 @@
 export type WebCrmRecord = {
   id: string;
-  kind: 'organization' | 'contact' | 'lead' | 'opportunity' | 'activity';
+  kind: 'lead' | 'prospect' | 'customer' | 'organization' | 'contact' | 'opportunity' | 'pipeline' | 'sales-stage' | 'activity' | 'call' | 'meeting' | 'task' | 'note' | 'follow-up' | 'quotation' | 'sales-order' | 'contract' | 'renewal' | 'service-case' | 'complaint' | 'campaign' | 'marketing-source' | 'territory' | 'sales-team' | 'commission' | 'credit-limit' | 'customer-statement';
   name: string;
   detail: string;
   status: string;
@@ -15,6 +15,8 @@ export type WebWorkspaceState = {
   records: WebCrmRecord[];
   permissions: WebPermission[];
   files: WebFile[];
+  customFields: string[];
+  customPipelineStages: string[];
 };
 
 export type WebSession = { id: string; tenantId: string; userId: string; displayName: string; openedAt: string };
@@ -22,7 +24,7 @@ export type WebPermission = { id: string; subject: string; resource: string; can
 export type WebFile = { id: string; name: string; size: number; type: string; uploadedAt: string; storage: 'browser' | 'cloud-ready' };
 
 const storageKey = 'prd-software-web-workspace-v1';
-const emptyState: WebWorkspaceState = { organization: '', adminName: '', tenantId: '', session: null, records: [], permissions: [], files: [] };
+const emptyState: WebWorkspaceState = { organization: '', adminName: '', tenantId: '', session: null, records: [], permissions: [], files: [], customFields: [], customPipelineStages: [] };
 
 function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -42,6 +44,8 @@ export function loadWebWorkspace(): WebWorkspaceState {
       records: Array.isArray(parsed.records) ? parsed.records : [],
       permissions: Array.isArray(parsed.permissions) ? parsed.permissions : [],
       files: Array.isArray(parsed.files) ? parsed.files : [],
+      customFields: Array.isArray(parsed.customFields) ? parsed.customFields : [],
+      customPipelineStages: Array.isArray(parsed.customPipelineStages) ? parsed.customPipelineStages : [],
     };
   } catch {
     return emptyState;
