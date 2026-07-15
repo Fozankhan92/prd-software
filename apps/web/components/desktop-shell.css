@@ -147,3 +147,72 @@
   color: var(--prd-accent);
   outline: none;
 }
+
+
+/* Modern desktop shell polish */
+.desktop-shell {
+  background:
+    radial-gradient(circle at 88% 0%, rgba(36, 87, 214, 0.08), transparent 28rem),
+    var(--prd-bg);
+}
+
+.desktop-shell__sidebar {
+  background: linear-gradient(180deg, #0b1220 0%, #101828 58%, #172554 100%);
+  box-shadow: 12px 0 32px rgba(16, 24, 40, 0.12);
+}
+
+.desktop-shell__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.desktop-shell__brand::before {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #2563eb, #60a5fa);
+  color: #fff;
+  content: "P";
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.nav-item {
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.nav-item:hover {
+  transform: translateX(2px);
+}
+
+.nav-item--active {
+  box-shadow: inset 3px 0 0 #60a5fa, 0 8px 18px rgba(2, 6, 23, 0.2);
+}
+
+.desktop-shell__header {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px);
+  border-bottom-color: rgba(228, 233, 240, 0.8);
+}
+
+.desktop-shell__content > section {
+  max-width: 1180px;
+  padding: 28px;
+  border: 1px solid rgba(228, 233, 240, 0.9);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: 0 18px 44px rgba(16, 24, 40, 0.06);
+}
+
+.desktop-workbench__actions button {
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.desktop-workbench__actions button:hover,
+.desktop-workbench__actions button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(36, 87, 214, 0.14);
+}
