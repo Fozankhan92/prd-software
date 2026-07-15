@@ -24,3 +24,4 @@ jobs:
       - run: pnpm run lint
       - run: pnpm run build
       - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - run: cargo check --manifest-path src-tauri/Cargo.toml
