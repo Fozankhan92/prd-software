@@ -1,3 +1,4 @@
+import "./desktop-shell.css";
 import type { ReactNode } from "react";
 
 export type DesktopNavItem = {
