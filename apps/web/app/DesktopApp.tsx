@@ -1,4 +1,5 @@
 
+pos: { eyebrow: "Retail operations", title: "POS workbench", summary: "Open registers, process sales, returns, payments, and end-of-day closing.", actions: ["Open register", "New sale", "Close register"], metrics: ["Open registers", "Sales today", "Returns pending", "Cash variance"] },
 
 import { createElement, useMemo, useState } from "react";import { DesktopShell, type DesktopNavItem } from "../components";
 import { desktopNavigation } from "./module-navigation";
