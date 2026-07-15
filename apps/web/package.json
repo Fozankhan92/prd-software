@@ -1,8 +1,8 @@
 {
-  "name": "@prd/desktop-shell",
+  "name": "@prd/web-app",
   "version": "0.1.0",
   "private": true,
-  "description": "Desktop-only React interface embedded in the PRD Software Tauri application",
+  "description": "Web-first React application for PRD Software, with a preserved Tauri desktop path",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
