@@ -17,7 +17,7 @@ const moduleContent: Record<string, { eyebrow: string; title: string; summary: s
   scm: { eyebrow: "Supply network", title: "SCM workbench", summary: "Track suppliers, shipments, lead times, receiving, and delivery exceptions.", actions: ["New shipment", "Track delivery", "View exceptions"], metrics: ["In-transit shipments", "On-time delivery", "Supplier exceptions", "Lead-time risk"] },
   accounting: { eyebrow: "Financial operations", title: "Accounting workbench", summary: "Manage chart of accounts, journals, imprest, narration, reconciliations, and closing.", actions: ["New journal", "Open imprest", "Run reconciliation"], metrics: ["Unposted journals", "Imprest balance", "Reconciliation exceptions", "Close readiness"] },
   finance: { eyebrow: "Financial planning", title: "Finance workbench", summary: "Review budgets, cash flow, payables, receivables, forecasts, and controls.", actions: ["New budget", "View cash flow", "Open forecast"], metrics: ["Budget variance", "Available cash", "Overdue receivables", "Forecast confidence"] },
-  files: { eyebrow: "Controlled cloud files", title: "Files / Cloud workbench", summary: "Share and organize files with layered access, versioning, and audit history.", actions: ["Upload file", "Create folder", "Review access"] },
+  files: { eyebrow: "Controlled cloud files", title: "Files / Cloud workbench", summary: "Share and organize files with layered access, versioning, and audit history.", actions: ["Upload file", "Create folder", "Review access"], metrics: ["Shared files", "Pending access reviews", "Recent versions", "Storage health"] },
 };
 
 export function DesktopApp({ permissions = {} }: DesktopAppProps) {
