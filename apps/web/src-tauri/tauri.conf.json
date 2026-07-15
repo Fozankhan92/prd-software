@@ -12,10 +12,10 @@
   "app": {
     "windows": [{
       "title": "PRD Software",
-      "width": 1440,
-      "height": 900,
-      "minWidth": 1024,
-      "minHeight": 700
+      "width": 1920,
+      "height": 1080,
+      "minWidth": 1920,
+      "minHeight": 1080
     }]
   },
   "bundle": {"active": false, "icon": []}
