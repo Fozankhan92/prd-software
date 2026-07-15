@@ -1,6 +1,7 @@
 
 
 
+
 import { createElement, useMemo, useState } from "react";import { DesktopShell, type DesktopNavItem } from "../components";
 import { desktopNavigation } from "./module-navigation";
 import { applyNavigationPermissions, type ModulePermissionMap } from "./navigation-permissions";
@@ -14,8 +15,7 @@ const moduleContent: Record<string, { eyebrow: string; title: string; summary: s
       hr: { eyebrow: "People operations", title: "HR workbench", summary: "Manage employees, departments, attendance, leave, payroll inputs, and documents.", actions: ["Add employee", "Open directory", "Review approvals"], metrics: ["Employees", "Departments", "Leave requests", "Pending approvals"] },
       erp: { eyebrow: "Core operations", title: "ERP / Inventory workbench", summary: "Coordinate items, suppliers, purchasing, receiving, and stock controls.", actions: ["New item", "Create purchase order", "View stock"], metrics: ["Items", "Suppliers", "Open purchase orders", "Inventory alerts"] },
       pos: { eyebrow: "Retail operations", title: "POS workbench", summary: "Open registers, process sales, returns, payments, and end-of-day closing.", actions: ["Open register", "New sale", "Close register"] },
-      ims: { eyebrow: "Inventory control", title: "IMS workbench", summary: "Track locations, lots, serials, transfers, adjustments, and inventory counts.", actions: ["Stock count", "Transfer stock", "View alerts"] },
-      oms: { eyebrow: "Order operations", title: "OMS workbench", summary: "Manage order capture, fulfillment, returns, cancellations, and customer status.", actions: ["New order", "Open fulfillment", "View returns"] },
+      ims: { eyebrow: "Inventory control", title: "IMS workbench", summary: "Track locations, lots, serials, transfers, adjustments, and inventory counts.", actions: actions: ["Stock count", "Transfer stock", "View alerts"], metrics: ["Tracked locations", "Low-stock items", "Open transfers", "Count variance"]oms: { eyebrow: "Order operations", title: "OMS workbench", summary: "Manage order capture, fulfillment, returns, cancellations, and customer status.", actions: ["New order", "Open fulfillment", "View returns"] },
       scm: { eyebrow: "Supply network", title: "SCM workbench", summary: "Track suppliers, shipments, lead times, receiving, and delivery exceptions.", actions: ["New shipment", "Track delivery", "View exceptions"] },
       accounting: { eyebrow: "Financial operations", title: "Accounting workbench", summary: "Manage chart of accounts, journals, imprest, narration, reconciliations, and closing.", actions: ["New journal", "Open imprest", "Run reconciliation"] },
       finance: { eyebrow: "Financial planning", title: "Finance workbench", summary: "Review budgets, cash flow, payables, receivables, forecasts, and controls.", actions: ["New budget", "View cash flow", "Open forecast"] },
