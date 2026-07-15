@@ -216,3 +216,48 @@
   transform: translateY(-1px);
   box-shadow: 0 8px 18px rgba(36, 87, 214, 0.14);
 }
+
+
+@media (max-width: 760px) {
+  .desktop-shell__sidebar {
+    width: 76px;
+    flex-basis: 76px;
+    padding-inline: 8px;
+  }
+
+  .desktop-shell__brand {
+    justify-content: center;
+    padding-inline: 0;
+    font-size: 0;
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding-inline: 8px;
+  }
+
+  .nav-item span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .nav-item small {
+    display: none;
+  }
+
+  .desktop-shell__header {
+    padding-inline: 16px;
+  }
+
+  .desktop-shell__content {
+    padding: 16px;
+  }
+
+  .desktop-shell__content > section {
+    padding: 20px;
+  }
+}
