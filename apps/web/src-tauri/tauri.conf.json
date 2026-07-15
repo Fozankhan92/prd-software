@@ -18,5 +18,5 @@
       "minHeight": 1080
     }]
   },
-  "bundle": {"active": false, "icon": []}
+  "bundle": {"active": true, "icon": ["icons/icon.png"]}
 }
