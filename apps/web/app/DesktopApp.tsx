@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DesktopShell, type DesktopNavItem } from "../components";
 import { desktopNavigation } from "./module-navigation";
+import { applyNavigationPermissions, type ModulePermissionMap } from "./navigation-permissions";
 
-export function DesktopApp() {
+export type DesktopAppProps = {
+  permissions?: ModulePermissionMap;
+};
+
+export function DesktopApp({ permissions = {} }: DesktopAppProps) {
   const [activeItem, setActiveItem] = useState("home");
-  const active = desktopNavigation.find((item) => item.id === activeItem);
+  const visibleNavigation = useMemo(
+    () => applyNavigationPermissions(desktopNavigation, permissions),
+    [permissions],
+  );
+  const active = visibleNavigation.find((item) => item.id === activeItem) ?? visibleNavigation[0];
 
   return (
     <DesktopShell
-      navItems={desktopNavigation}
-      activeItem={activeItem}
+      navItems={visibleNavigation}
+      activeItem={active?.id ?? "home"}
       onNavigate={(item: DesktopNavItem) => setActiveItem(item.id)}
     >
       <section aria-labelledby="workspace-heading">
