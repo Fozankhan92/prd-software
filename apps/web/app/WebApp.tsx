@@ -21,8 +21,12 @@ const moduleDescriptions: Record<ModuleId, string> = {
 };
 
 const recordLabels: Record<WebCrmRecord['kind'], string> = {
-  organization: 'Account', contact: 'Contact', lead: 'Lead', opportunity: 'Opportunity', activity: 'Activity',
+  lead: 'Lead', prospect: 'Prospect', customer: 'Customer', organization: 'Organization', contact: 'Contact', opportunity: 'Opportunity', pipeline: 'Pipeline', 'sales-stage': 'Sales stage', activity: 'Activity', call: 'Call', meeting: 'Meeting', task: 'Task', note: 'Note', 'follow-up': 'Follow-up', quotation: 'Quotation', 'sales-order': 'Sales order', contract: 'Contract', renewal: 'Renewal', 'service-case': 'Customer service case', complaint: 'Complaint', campaign: 'Campaign', 'marketing-source': 'Marketing source', territory: 'Territory', 'sales-team': 'Sales team', commission: 'Commission', 'credit-limit': 'Customer credit limit', 'customer-statement': 'Customer statement',
 };
+
+const crmViews = [
+  ['overview', 'Overview'], ['sales', 'Sales'], ['activities', 'Activities'], ['service', 'Service'], ['marketing', 'Marketing'], ['controls', 'CRM controls'],
+] as const;
 
 export function WebApp() {
   const [activeModule, setActiveModule] = useState<ModuleId>('home');
@@ -31,12 +35,27 @@ export function WebApp() {
   const [recordName, setRecordName] = useState('');
   const [recordDetail, setRecordDetail] = useState('');
   const [recordStatus, setRecordStatus] = useState('New');
+  const [crmView, setCrmView] = useState<(typeof crmViews)[number][0]>('overview');
+  const [recordRelationship, setRecordRelationship] = useState('');
+  const [customFieldName, setCustomFieldName] = useState('');
+  const [customStageName, setCustomStageName] = useState('');
   const [permissionSubject, setPermissionSubject] = useState('');
   const [permissionResource, setPermissionResource] = useState('');
   const [permissionEdit, setPermissionEdit] = useState(false);
   const [message, setMessage] = useState('');
 
-  const crmRecords = useMemo(() => workspace.records.filter((record) => record.kind !== 'activity'), [workspace.records]);
+  const crmRecords = useMemo(() => workspace.records, [workspace.records]);
+  const crmViewRecords = useMemo(() => {
+    const kinds: Record<(typeof crmViews)[number][0], WebCrmRecord['kind'][]> = {
+      overview: Object.keys(recordLabels) as WebCrmRecord['kind'][],
+      sales: ['lead', 'prospect', 'customer', 'organization', 'contact', 'opportunity', 'pipeline', 'sales-stage', 'quotation', 'sales-order', 'contract', 'renewal', 'commission', 'credit-limit', 'customer-statement'],
+      activities: ['activity', 'call', 'meeting', 'task', 'note', 'follow-up'],
+      service: ['service-case', 'complaint'],
+      marketing: ['campaign', 'marketing-source'],
+      controls: ['territory', 'sales-team'],
+    };
+    return crmRecords.filter((record) => kinds[crmView].includes(record.kind));
+  }, [crmRecords, crmView]);
   const saveWorkspace = (next: WebWorkspaceState, successMessage: string) => {
     setWorkspace(next);
     saveWebWorkspace(next);
@@ -59,10 +78,31 @@ export function WebApp() {
       setMessage(`${recordLabels[recordKind]} name is required.`);
       return;
     }
-    const next = { ...workspace, records: [createWebRecord(recordKind, recordName.trim(), recordDetail.trim(), recordStatus), ...workspace.records] };
+    const duplicate = workspace.records.some((record) => record.kind === recordKind && record.name.trim().toLowerCase() === recordName.trim().toLowerCase());
+    if (duplicate) {
+      setMessage(`Possible duplicate detected: this ${recordLabels[recordKind].toLowerCase()} already exists.`);
+      return;
+    }
+    const detail = recordRelationship.trim() ? `${recordDetail.trim()} · Related to: ${recordRelationship.trim()}` : recordDetail.trim();
+    const next = { ...workspace, records: [createWebRecord(recordKind, recordName.trim(), detail, recordStatus), ...workspace.records] };
     saveWorkspace(next, `${recordLabels[recordKind]} added to the web workspace.`);
     setRecordName('');
     setRecordDetail('');
+    setRecordRelationship('');
+  }
+
+  function addCustomField(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!customFieldName.trim() || workspace.customFields.includes(customFieldName.trim())) return setMessage('Enter a new custom field name.');
+    saveWorkspace({ ...workspace, customFields: [...workspace.customFields, customFieldName.trim()] }, 'Custom CRM field added.');
+    setCustomFieldName('');
+  }
+
+  function addCustomStage(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!customStageName.trim() || workspace.customPipelineStages.includes(customStageName.trim())) return setMessage('Enter a new custom pipeline stage.');
+    saveWorkspace({ ...workspace, customPipelineStages: [...workspace.customPipelineStages, customStageName.trim()] }, 'Custom pipeline stage added.');
+    setCustomStageName('');
   }
 
   function addPermission(event: React.FormEvent<HTMLFormElement>) {
@@ -110,7 +150,11 @@ export function WebApp() {
             <div className="web-grid web-grid--two"><section className="web-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">Getting started</p><h3>Set up your workspace</h3></div><span className="web-card__step">1 of 3</span></div><form className="web-form" onSubmit={finishSetup}><label>Organization name<input value={workspace.organization} onChange={(event) => setWorkspace({ ...workspace, organization: event.target.value })} placeholder="e.g. Fozan Trading Co." /></label><label>Administrator name<input value={workspace.adminName} onChange={(event) => setWorkspace({ ...workspace, adminName: event.target.value })} placeholder="Your name" /></label><button className="web-button web-button--primary" type="submit">Save workspace setup</button></form></section><section className="web-card"><p className="web-app__eyebrow">Next layers</p><h3>Connected services</h3><ul className="web-checklist"><li><span>✓</span> Tenant-aware data service</li><li><span>✓</span> Session and permission boundary</li><li><span>✓</span> JSON backup/export now</li><li><span>✓</span> PostgreSQL and cloud storage ready</li></ul><button className="web-button web-button--secondary" type="button" onClick={() => exportWorkspace(workspace)}>Download backup</button></section></div>
           </> : null}
 
-          {activeModule === 'crm' ? <div className="web-grid web-grid--crm"><section className="web-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">CRM data entry</p><h3>Add a related record</h3></div><span className="web-card__hint">Complex records supported</span></div><form className="web-form" onSubmit={addRecord}><label>Record type<select value={recordKind} onChange={(event) => setRecordKind(event.target.value as WebCrmRecord['kind'])}>{Object.entries(recordLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Name or subject<input value={recordName} onChange={(event) => setRecordName(event.target.value)} placeholder="Record name" /></label><label>Details, notes, or reference<input value={recordDetail} onChange={(event) => setRecordDetail(event.target.value)} placeholder="Optional details" /></label><label>Status<select value={recordStatus} onChange={(event) => setRecordStatus(event.target.value)}><option>New</option><option>Working</option><option>Qualified</option><option>Proposal</option><option>Won</option><option>Open</option><option>Completed</option></select></label><button className="web-button web-button--primary" type="submit">Add to CRM</button></form></section><section className="web-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">Recent records</p><h3>CRM workspace</h3></div><span className="web-card__hint">{crmRecords.length} records</span></div><div className="web-records">{crmRecords.length ? crmRecords.slice(0, 8).map((record) => <article key={record.id}><span className="web-record-icon">{recordLabels[record.kind].slice(0, 1)}</span><div><strong>{record.name}</strong><small>{recordLabels[record.kind]} · {record.status}{record.detail ? ` · ${record.detail}` : ''}</small></div></article>) : <div className="web-empty">Your CRM records will appear here after you add them.</div>}</div></section></div> : null}
+          {activeModule === 'crm' ? <>
+            <div className="web-subnav" aria-label="CRM sections">{crmViews.map(([value, label]) => <button type="button" key={value} className={crmView === value ? 'web-subnav__item web-subnav__item--active' : 'web-subnav__item'} onClick={() => setCrmView(value)}>{label}</button>)}</div>
+            {crmView !== 'controls' ? <div className="web-grid web-grid--crm"><section className="web-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">{crmViews.find(([value]) => value === crmView)?.[1]} data entry</p><h3>Add a related CRM record</h3></div><span className="web-card__hint">Relationships and custom fields</span></div><form className="web-form" onSubmit={addRecord}><label>Record type<select value={recordKind} onChange={(event) => setRecordKind(event.target.value as WebCrmRecord['kind'])}>{Object.entries(recordLabels).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></label><label>Name or subject<input value={recordName} onChange={(event) => setRecordName(event.target.value)} placeholder="Record name" /></label><label>Details, notes, or reference<input value={recordDetail} onChange={(event) => setRecordDetail(event.target.value)} placeholder="Optional details" /></label><label>Related record<input value={recordRelationship} onChange={(event) => setRecordRelationship(event.target.value)} placeholder="Account, contact, opportunity..." /></label><label>Status or stage<select value={recordStatus} onChange={(event) => setRecordStatus(event.target.value)}>{['New', 'Working', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Open', 'Pending', 'Resolved', 'Completed', ...workspace.customPipelineStages].map((stage) => <option key={stage}>{stage}</option>)}</select></label><button className="web-button web-button--primary" type="submit">Add to CRM</button></form></section><section className="web-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">{crmViews.find(([value]) => value === crmView)?.[1]}</p><h3>CRM records</h3></div><span className="web-card__hint">{crmViewRecords.length} records</span></div><div className="web-records">{crmViewRecords.length ? crmViewRecords.slice(0, 12).map((record) => <article key={record.id}><span className="web-record-icon">{recordLabels[record.kind].slice(0, 1)}</span><div><strong>{record.name}</strong><small>{recordLabels[record.kind]} · {record.status}{record.detail ? ` · ${record.detail}` : ''}</small></div></article>) : <div className="web-empty">No records in this CRM section yet.</div>}</div></section></div> : null}
+            {crmView === 'controls' ? <div className="web-grid web-grid--two"><section className="web-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">Configuration</p><h3>Custom CRM fields</h3></div><span className="web-card__hint">{workspace.customFields.length} fields</span></div><form className="web-form" onSubmit={addCustomField}><label>Field name<input value={customFieldName} onChange={(event) => setCustomFieldName(event.target.value)} placeholder="e.g. Customer segment" /></label><button className="web-button web-button--primary" type="submit">Add custom field</button></form><div className="web-chip-list">{workspace.customFields.map((field) => <span key={field}>{field}</span>)}</div></section><section className="web-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">Pipeline configuration</p><h3>Custom sales stages</h3></div><span className="web-card__hint">{workspace.customPipelineStages.length} stages</span></div><form className="web-form" onSubmit={addCustomStage}><label>Stage name<input value={customStageName} onChange={(event) => setCustomStageName(event.target.value)} placeholder="e.g. Legal review" /></label><button className="web-button web-button--primary" type="submit">Add pipeline stage</button></form><div className="web-chip-list">{workspace.customPipelineStages.map((stage) => <span key={stage}>{stage}</span>)}</div></section></div> : null}
+          </> : null}
 
           {activeModule === 'admin' ? <div className="web-grid web-grid--two"><section className="web-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">Double-layer access</p><h3>Assign permission</h3></div><span className="web-card__hint">Read ≠ edit</span></div><form className="web-form" onSubmit={addPermission}><label>User or group<input value={permissionSubject} onChange={(event) => setPermissionSubject(event.target.value)} placeholder="User, role, or department" /></label><label>Resource<input value={permissionResource} onChange={(event) => setPermissionResource(event.target.value)} placeholder="CRM account, file, report..." /></label><label className="web-checkbox"><input type="checkbox" checked={permissionEdit} onChange={(event) => setPermissionEdit(event.target.checked)} /> Also grant edit permission</label><button className="web-button web-button--primary" type="submit">Grant permission</button></form></section><section className="web-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">Permission register</p><h3>Current grants</h3></div><button className="web-button web-button--secondary" type="button" onClick={() => exportWorkspace(workspace)}>Backup</button></div><div className="web-records">{workspace.permissions.length ? workspace.permissions.map((permission) => <article key={permission.id}><span className="web-record-icon">{permission.canEdit ? 'E' : 'R'}</span><div><strong>{permission.subject}</strong><small>{permission.resource} · {permission.canEdit ? 'Read and edit' : 'Read only'}</small></div></article>) : <div className="web-empty">No permissions assigned yet.</div>}</div></section></div> : null}
 
