@@ -131,6 +131,21 @@
   margin-top: 24px;
 }
 
+.desktop-workbench__form {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--desktop-border, #d9dee8);
+  border-radius: 14px;
+  background: color-mix(in srgb, white 88%, #edf3ff);
+}
+
+.desktop-workbench__form h3 { margin: 0; }
+.desktop-workbench__form input { min-height: 2.5rem; padding: 0 0.75rem; border: 1px solid var(--desktop-border, #d9dee8); border-radius: 8px; }
+.desktop-workbench__form button { width: fit-content; }
+.desktop-workbench__notice { margin-top: 1rem; color: #2563eb; font-weight: 600; }
+
 .desktop-workbench__actions button {
   border: 1px solid var(--prd-border);
   border-radius: 8px;
