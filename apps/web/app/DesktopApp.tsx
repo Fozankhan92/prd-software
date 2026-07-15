@@ -23,11 +23,14 @@ const moduleContent: Record<string, { eyebrow: string; title: string; summary: s
 export function DesktopApp({ permissions = {} }: DesktopAppProps) {
   const [activeItem, setActiveItem] = useState("home");
   const [notice, setNotice] = useState<string | null>(null);
+  const [crmName, setCrmName] = useState("");
+  const [crmEmail, setCrmEmail] = useState("");
   const visibleNavigation = useMemo(() => applyNavigationPermissions(desktopNavigation, permissions), [permissions]);
   const active = visibleNavigation.find((item) => item.id === activeItem) ?? visibleNavigation[0];
   const content = moduleContent[active?.id ?? "home"] ?? moduleContent.home;
   const metrics = content.metrics ? createElement("div", { className: "desktop-workbench__metrics", "aria-label": content.title + " summary" }, content.metrics.map((metric) => createElement("article", { key: metric }, createElement("strong", null, "—"), createElement("span", null, metric)))) : null;
   const actions = createElement("div", { className: "desktop-workbench__actions", "aria-label": content.title + " actions" }, content.actions.map((action) => createElement("button", { type: "button", key: action, onClick: () => setNotice(action + " workflow ready") }, action)));
-  const section = createElement("section", { "aria-labelledby": "workspace-heading" }, createElement("p", { className: "desktop-shell__eyebrow" }, content.eyebrow), createElement("h2", { id: "workspace-heading" }, content.title), createElement("p", null, content.summary), metrics, actions, notice ? createElement("p", { role: "status", className: "desktop-workbench__notice" }, notice) : null);
+  const crmPanel = active?.id === "crm" ? createElement("div", { className: "desktop-workbench__form", "aria-label": "New CRM contact" }, createElement("h3", null, "New contact"), createElement("input", { value: crmName, placeholder: "Contact name", onChange: (event: { target: { value: string } }) => setCrmName(event.target.value) }), createElement("input", { value: crmEmail, placeholder: "Email (optional)", type: "email", onChange: (event: { target: { value: string } }) => setCrmEmail(event.target.value) }), createElement("button", { type: "button", onClick: () => setNotice(crmName.trim() ? "Contact draft ready" : "Enter a contact name") }, "Save contact draft")) : null;
+  const section = createElement("section", { "aria-labelledby": "workspace-heading" }, createElement("p", { className: "desktop-shell__eyebrow" }, content.eyebrow), createElement("h2", { id: "workspace-heading" }, content.title), createElement("p", null, content.summary), metrics, actions, crmPanel, notice ? createElement("p", { role: "status", className: "desktop-workbench__notice" }, notice) : null);
   return createElement(DesktopShell, { navItems: visibleNavigation, activeItem: active?.id ?? "home", onNavigate: (item: DesktopNavItem) => setActiveItem(item.id), children: section }, section);
 }
