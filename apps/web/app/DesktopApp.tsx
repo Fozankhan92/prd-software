@@ -28,5 +28,5 @@ export function DesktopApp({ permissions = {} }: DesktopAppProps) {
   const metrics = content.metrics ? createElement("div", { className: "desktop-workbench__metrics", "aria-label": content.title + " summary" }, content.metrics.map((metric) => createElement("article", { key: metric }, createElement("strong", null, "—"), createElement("span", null, metric)))) : null;
   const actions = createElement("div", { className: "desktop-workbench__actions", "aria-label": content.title + " actions" }, content.actions.map((action) => createElement("button", { type: "button", key: action }, action)));
   const section = createElement("section", { "aria-labelledby": "workspace-heading" }, createElement("p", { className: "desktop-shell__eyebrow" }, content.eyebrow), createElement("h2", { id: "workspace-heading" }, content.title), createElement("p", null, content.summary), metrics, actions);
-  return createElement(DesktopShell, { navItems: visibleNavigation, activeItem: active?.id ?? "home", onNavigate: (item: DesktopNavItem) => setActiveItem(item.id) }, section);
+  return createElement(DesktopShell, { navItems: visibleNavigation, activeItem: active?.id ?? "home", onNavigate: (item: DesktopNavItem) => setActiveItem(item.id), children: section }, section);
 }
