@@ -6,7 +6,7 @@ import { applyNavigationPermissions, type ModulePermissionMap } from "./navigati
 export type DesktopAppProps = { permissions?: ModulePermissionMap };
 
 const moduleContent: Record<string, { eyebrow: string; title: string; summary: string; actions: string[]; metrics?: string[] }> = {
-  home: { eyebrow: "Executive workspace", title: "Operations overview", summary: "Monitor organization-wide activity, approvals, and exceptions.", actions: ["View summary", "Open approvals"] },
+  home: { eyebrow: "Executive workspace", title: "Operations overview", summary: "Monitor organization-wide activity, approvals, and exceptions.", actions: ["View summary", "Open approvals"], metrics: ["Pending approvals", "Open exceptions", "Active modules", "Organization health"] },
   admin: { eyebrow: "Control center", title: "Administration", summary: "Manage users, roles, permissions, sessions, and audit history.", actions: ["Manage users", "Review permissions", "Open audit log"], metrics: ["Active users", "Pending permissions", "Open sessions", "Audit events"] },
   crm: { eyebrow: "Customer operations", title: "CRM workbench", summary: "Manage organizations, contacts, leads, opportunities, and customer activity.", actions: ["New contact", "Open pipeline", "View activities"], metrics: ["Contacts", "Open opportunities", "Tasks due", "Recent activity"] },
   hr: { eyebrow: "People operations", title: "HR workbench", summary: "Manage employees, departments, attendance, leave, payroll inputs, and documents.", actions: ["Add employee", "Open directory", "Review approvals"], metrics: ["Employees", "Departments", "Leave requests", "Pending approvals"] },
