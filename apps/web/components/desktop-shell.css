@@ -261,3 +261,26 @@
     padding: 20px;
   }
 }
+
+
+.desktop-shell :focus-visible {
+  outline: 3px solid rgba(96, 165, 250, 0.72);
+  outline-offset: 2px;
+}
+
+.desktop-shell__sidebar,
+.desktop-shell__workspace {
+  scrollbar-width: thin;
+  scrollbar-color: #64748b transparent;
+}
+
+.desktop-shell__sidebar::-webkit-scrollbar,
+.desktop-shell__workspace::-webkit-scrollbar {
+  width: 8px;
+}
+
+.desktop-shell__sidebar::-webkit-scrollbar-thumb,
+.desktop-shell__workspace::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #64748b;
+}
