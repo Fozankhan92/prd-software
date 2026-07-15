@@ -314,3 +314,37 @@
     border-color: var(--prd-border);
   }
 }
+
+
+.desktop-workbench__metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.desktop-workbench__metrics article {
+  display: grid;
+  gap: 5px;
+  padding: 16px;
+  border: 1px solid var(--prd-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--prd-surface) 88%, var(--prd-accent));
+}
+
+.desktop-workbench__metrics strong {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+}
+
+.desktop-workbench__metrics span {
+  color: var(--prd-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+@media (max-width: 760px) {
+  .desktop-workbench__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
