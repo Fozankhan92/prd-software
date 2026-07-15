@@ -10,12 +10,19 @@ export type WebCrmRecord = {
 export type WebWorkspaceState = {
   organization: string;
   adminName: string;
+  tenantId: string;
+  session: WebSession | null;
   records: WebCrmRecord[];
+  permissions: WebPermission[];
+  files: WebFile[];
 };
 
-const storageKey = 'prd-software-web-workspace-v1';
+export type WebSession = { id: string; tenantId: string; userId: string; displayName: string; openedAt: string };
+export type WebPermission = { id: string; subject: string; resource: string; canRead: boolean; canEdit: boolean };
+export type WebFile = { id: string; name: string; size: number; type: string; uploadedAt: string; storage: 'browser' | 'cloud-ready' };
 
-const emptyState: WebWorkspaceState = { organization: '', adminName: '', records: [] };
+const storageKey = 'prd-software-web-workspace-v1';
+const emptyState: WebWorkspaceState = { organization: '', adminName: '', tenantId: '', session: null, records: [], permissions: [], files: [] };
 
 function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -30,7 +37,11 @@ export function loadWebWorkspace(): WebWorkspaceState {
     return {
       organization: typeof parsed.organization === 'string' ? parsed.organization : '',
       adminName: typeof parsed.adminName === 'string' ? parsed.adminName : '',
+      tenantId: typeof parsed.tenantId === 'string' ? parsed.tenantId : '',
+      session: parsed.session ?? null,
       records: Array.isArray(parsed.records) ? parsed.records : [],
+      permissions: Array.isArray(parsed.permissions) ? parsed.permissions : [],
+      files: Array.isArray(parsed.files) ? parsed.files : [],
     };
   } catch {
     return emptyState;
@@ -43,4 +54,30 @@ export function saveWebWorkspace(state: WebWorkspaceState): void {
 
 export function createWebRecord(kind: WebCrmRecord['kind'], name: string, detail: string, status: string): WebCrmRecord {
   return { id: crypto.randomUUID(), kind, name, detail, status, createdAt: new Date().toISOString() };
+}
+
+export function openWebSession(tenantId: string, displayName: string): WebSession {
+  return { id: crypto.randomUUID(), tenantId, userId: crypto.randomUUID(), displayName, openedAt: new Date().toISOString() };
+}
+
+export function createTenantId(): string {
+  return crypto.randomUUID();
+}
+
+export function grantWebPermission(subject: string, resource: string, canEdit: boolean): WebPermission {
+  return { id: crypto.randomUUID(), subject, resource, canRead: true, canEdit };
+}
+
+export function createWebFile(file: Pick<File, 'name' | 'size' | 'type'>): WebFile {
+  return { id: crypto.randomUUID(), name: file.name, size: file.size, type: file.type || 'application/octet-stream', uploadedAt: new Date().toISOString(), storage: 'cloud-ready' };
+}
+
+export function exportWorkspace(state: WebWorkspaceState): void {
+  if (typeof document === 'undefined') return;
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${state.organization || 'prd-workspace'}-backup.json`;
+  link.click();
+  URL.revokeObjectURL(link.href);
 }
