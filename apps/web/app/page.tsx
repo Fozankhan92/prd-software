@@ -82,8 +82,8 @@ export default function HomePage() {
   const [permissionStatus, setPermissionStatus] = useState('Permission assignment pending');
 
   async function bootstrapAdmin() {
-    if (!organization.trim() || !adminEmail.trim()) {
-      setStatus('Organization and administrator email are required');
+    if (!organization.trim()) {
+      setStatus('Organization is required. Adding an administrator email is encouraged for account recovery and notifications.');
       return;
     }
 
@@ -93,9 +93,10 @@ export default function HomePage() {
       const tenantId = crypto.randomUUID();
       const userId = crypto.randomUUID();
       const sessionId = crypto.randomUUID();
+      const contactEmail = adminEmail.trim() || null;
 
       await database.execute('INSERT INTO tenant (id, name, created_at) VALUES ($1, $2, $3)', [tenantId, organization.trim(), now]);
-      await database.execute('INSERT INTO app_user (id, tenant_id, email, display_name, created_at) VALUES ($1, $2, $3, $4, $5)', [userId, tenantId, adminEmail.trim(), adminEmail.trim(), now]);
+      await database.execute('INSERT INTO app_user (id, tenant_id, email, display_name, created_at) VALUES ($1, $2, $3, $4, $5)', [userId, tenantId, contactEmail, contactEmail ?? 'Administrator', now]);
       await database.execute('UPDATE admin_bootstrap SET tenant_id = $1, user_id = $2, completed_at = $3 WHERE id = 1', [tenantId, userId, now]);
       await database.execute('INSERT INTO session (id, tenant_id, user_id, issued_at, expires_at) VALUES ($1, $2, $3, $4, $5)', [sessionId, tenantId, userId, now, null]);
       await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('current_tenant_id', $1)", [tenantId]);
