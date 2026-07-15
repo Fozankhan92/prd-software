@@ -18,5 +18,5 @@
       "minHeight": 700
     }]
   },
-  "bundle": {"active": false}
+  "bundle": {"active": false, "icon": []}
 }
