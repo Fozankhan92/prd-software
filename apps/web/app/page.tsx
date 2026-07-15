@@ -82,8 +82,8 @@ export default function HomePage() {
   const [permissionStatus, setPermissionStatus] = useState('Permission assignment pending');
 
   async function bootstrapAdmin() {
-    if (!organization.trim()) {
-      setStatus('Organization is required. Adding an administrator email is encouraged for account recovery and notifications.');
+    if (!organization.trim() || !adminEmail.trim()) {
+      setStatus('Organization and administrator email are required');
       return;
     }
 
@@ -93,10 +93,9 @@ export default function HomePage() {
       const tenantId = crypto.randomUUID();
       const userId = crypto.randomUUID();
       const sessionId = crypto.randomUUID();
-      const contactEmail = adminEmail.trim() || null;
 
       await database.execute('INSERT INTO tenant (id, name, created_at) VALUES ($1, $2, $3)', [tenantId, organization.trim(), now]);
-      await database.execute('INSERT INTO app_user (id, tenant_id, email, display_name, created_at) VALUES ($1, $2, $3, $4, $5)', [userId, tenantId, contactEmail, contactEmail ?? 'Administrator', now]);
+      await database.execute('INSERT INTO app_user (id, tenant_id, email, display_name, created_at) VALUES ($1, $2, $3, $4, $5)', [userId, tenantId, adminEmail.trim(), adminEmail.trim(), now]);
       await database.execute('UPDATE admin_bootstrap SET tenant_id = $1, user_id = $2, completed_at = $3 WHERE id = 1', [tenantId, userId, now]);
       await database.execute('INSERT INTO session (id, tenant_id, user_id, issued_at, expires_at) VALUES ($1, $2, $3, $4, $5)', [sessionId, tenantId, userId, now, null]);
       await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('current_tenant_id', $1)", [tenantId]);
@@ -153,138 +152,345 @@ export default function HomePage() {
         <h2>First-launch administrator setup</h2>
         <p style={{ color: '#667085' }}>Create the local organization and administrator record for this desktop installation.</p>
         <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-          <input aria-label="Organization name" placeholder="Organization name" value={organization} onChange={(event) => 
-					275 container grammarly-integration
-						276 text {"mode":"full","isActive":true,"isUserDisabled":false}
-			277 pop-up button (settable, string) Tab search
-			278 container (settable, string)
-				279 tab group (settable, string)
-					280 tab (settable, boolean) Description: What’s new, Value: off
-					281 tab (settable, boolean) Description: Oops, Value: off
-					282 tab (settable, boolean) Description: LAHORE'S LOST FRAMES |DOCUMENTARY |MASOOD BUTT|FOZAN KHAN |NOW STREAMING - YouTube, Value: off
-					283 tab (settable, boolean) Description: YouTube Creator Studio, Value: off
-					284 tab (settable, boolean) Description: YouTube Creator Studio, Value: off
-					285 tab (settable, boolean) Description: window 11 - YouTube, Value: off
-					286 tab (settable, boolean) Description: Oops, Value: off
-					287 tab (settable, boolean) Description: ALEXA 35 Xtreme - The Guided Tour - More Speed. Less Data. - YouTube, Value: off
-					288 tab (settable, boolean) Description: Course 5 Notes - Business Leader Communication Certification, Value: off
-					289 tab (settable, boolean) Description: Products – NSCS, Value: off
-					290 tab (settable, boolean) Description: (45) Remote jobs | LinkedIn - Memory usage - 360 MB, Value: off
-					291 tab (settable, boolean) Value: off, Description: Jr. Production Assistant - Remote Operations in Atlanta, Georgia, United States of America | Early Careers at Warner Bros. Discovery
-					292 tab (settable, boolean) Description: Jr. Production Assistant - Remote Operations, Value: off
-					293 tab (settable, boolean) Description: New Member Checklist, Value: off
-					294 tab (settable, boolean) Description: NSCS Virtual Induction Ceremony December 5, 2024, Value: off
-					295 tab (settable, boolean) Description: Royalty Free Scary Horror Background Music Downloads | FStudios, Value: off
-					296 tab (settable, boolean) Description: Royalty-Free Suspenseful Music | Epidemic Sound, Value: off
-					297 tab (settable, boolean) Description: Oops, Value: off
-					298 tab (settable, boolean) Description: Oops, Value: off
-					299 tab (settable, boolean) Description: Oops, Value: off
-					300 tab (settable, boolean) Description: (66) YouTube - Memory usage - 282 MB, Value: off
-					301 tab (settable, boolean) Description: Use automatic dubbing - Computer - YouTube Help, Value: off
-					302 tab (settable, boolean) Description: LMS Dashboard Template, Admin Templates ft. admin & bootstrap - Envato, Value: off
-					303 tab (settable, boolean) Description: (9) WhatsApp Business - Memory usage - 477 MB, Value: off
-					304 tab (settable, boolean) Description: add-logo-watermark · Clueso Video Skills, Value: off
-					305 tab (settable, boolean) Description: Home | Julián Martínez, Value: off
-					306 tab (settable, boolean) Description: Where possibilities begin - Udemy Blog, Value: off
-					307 tab (settable, boolean) Description: Udemy: Online Courses for Skills, Careers & AI, Value: off
-					308 tab (settable, boolean) Description: Submissions - Independent Talent, Value: off
-					309 tab (settable, boolean) Description: Login - Full Sail University, Value: off
-					310 tab (settable, boolean) Description: Full Sail University, Value: off
-					311 tab (settable, boolean) Description: YouTube, Value: off
-					312 tab (settable, boolean) Description: Oops, Value: off
-					313 tab (settable, boolean) Description: (45) YouTube, Value: off
-					314 tab (settable, boolean) Description: Channel content - YouTube Studio, Value: off
-					315 tab (settable, boolean) Description: Channel dashboard - YouTube Studio, Value: off
-					316 tab (settable, boolean) Description: Tabaahi - YouTube, Value: off
-					317 tab (settable, boolean) Description: (66) Introducing Tutor LMS 4.0! - YouTube, Value: off
-					318 tab (settable, boolean) Description: (66) Build and publish web apps directly in ChatGPT - YouTube, Value: off
-					319 tab (settable, boolean) Description: How To Create Vox-Style AI Motion Graphics (Full Workflow) Prompt Pack - Google Docs, Value: off
-					320 tab (settable, boolean) Description: Text Pack 2 (Free) - quang's Ko-fi Shop, Value: off
-					321 tab (settable, boolean) Description: Magnifier for DaVinci Resolve – MONONODES, Value: off
-					322 tab (settable, boolean) Description: Summary, Value: off
-					323 tab (settable, boolean) Description: Full Sail Student Portal, Value: off
-					324 tab (settable, boolean) Description: Account – Full Sail HangR, Value: off
-					325 tab (settable, boolean) Description: Email - Fozan Khan - Outlook, Value: off
-					326 tab (settable, boolean) Description: What type of user are you?, Value: off
-					327 tab (settable, boolean) Description: Feed | Full Sail Alumni Network, Value: off
-					328 tab (settable, boolean) Description: Document 1.docx, Value: off
-					329 tab (settable, boolean) Description: Graduation : Live Stream - Full Sail University, Value: off
-					330 tab (settable, boolean) Description: Portfolio | FINAL_Fozan_Khan, Value: off
-					331 tab (settable, boolean) Description: Professional Lighting and Production Hardware Catalog - NotebookLM, Value: off
-					332 tab (settable, boolean) Description: Welcome to the Free Music Archive - Free Music Archive, Value: off
-					333 tab (settable, boolean) Description: Welcome | LinkedIn Learning, Value: off
-					334 tab (settable, boolean) Description: (66) DCBS TV: CAMERA-TEAM ROUND TABLE - YouTube, Value: off
-					335 tab (settable, boolean) Description: Welcome to LinkedIn Learning | LinkedIn Learning, Value: off
-					336 tab (settable, boolean) Description: Login – FSO, Value: off
-					337 tab (settable, boolean) Description: Suzanne Walking - Julian Opie — Google Arts & Culture, Value: off
-					338 tab (settable, boolean) Description: Google Arts & Culture, Value: off
-					339 tab (settable, boolean) Description: Young Virgin Auto-Sodomized by the Horns of Her Own Chastity by Salvador Dalí, Value: off
-					340 tab (settable, boolean) Description: Full Sail University’s Videos on Vimeo, Value: off
-					341 tab (settable, boolean) Description: Adobe Portfolio | Build your own personalized website, Value: off
-					342 tab (settable, boolean) Description: Log in to your Figma account - fozankhan92@gmail.com - Gmail, Value: off
-					343 tab (settable, boolean) Value: off, Description: Fozankhan92/prd-software: Custom all-in-one CRM, HR, ERP, POS, IMS, OMS, SCM, accounting, finance, cloud files, and MCP-ready business platform.
-					344 tab (settable, boolean) Description: StarNow, Value: off
-					345 tab (settable, boolean) Description: Join from Zoom Workplace app - Zoom, Value: off
-					346 tab (settable, boolean) Description: work.mercor.com/earnings, Value: off
-					347 tab (settable, boolean) Description: Recents – Figma, Value: off
-					348 tab (settable, boolean) Description: AI Detector - Trusted AI Checker for ChatGPT, GPT5 & Gemini, Value: off
-					349 tab (settable, boolean) Description: Log In to Your Wix Account - Wix.com, Value: off
-					350 tab (settable, boolean) Description: 500 Error: Internal Server Error | Wix.com, Value: off
-					351 tab (settable, boolean) Description: Log In to Your Wix Account - Wix.com, Value: off
-					352 tab (settable, boolean) Description: Welcome to LinkedIn Learning | LinkedIn Learning, Value: off
-					353 tab (settable, boolean) Description: ChatGPT, Value: off
-					354 tab (settable, boolean) Description: PRD Software, Value: off
-					355 tab (settable, boolean) Description: Installed GitHub Apps, Value: off
-					356 tab (settable, boolean) Description: Best Cinematography Courses To Take In 2023, Value: off
-					357 tab (settable, boolean) Description: MZed - Courses, Value: off
-					358 tab (settable, boolean) Description: School of Motion | Explore our Motion Design Course Catalogue, Value: off
-					359 tab (settable, boolean) Description: Directing Master Course - FilmSkills, Value: off
-					360 tab (settable, boolean) Description: Course Catalog | Kadenze, Value: off
-					361 tab (settable, boolean) Description: Fozan_Khan_ATS_CV.pdf, Value: off
-					362 tab (settable, boolean) Description: CamScanner 12-10-2021 16.35 - SOPs-for-consumers.pdf, Value: off
-					363 tab (settable, boolean) Description: (66) broadcast legal color premiere pro - YouTube, Value: off
-					364 tab (settable, boolean) Description: How Salesforce Transformed Its Leadership Development Program, Value: off
-					365 tab (settable, boolean) Description: 404: This page could not be found., Value: off
-					366 tab (settable, boolean) Description: DeepSeek, Value: off
-					367 tab (settable, boolean) Description: Filmmaking Certificate, Value: off
-					368 tab (settable, boolean) Description: The French Masters and Classic Hollywood Cinema | Free Course | Alison, Value: off
-					369 tab (settable, boolean) Description: How to get Adobe Certified | Step-by-Step Exam Guide, Value: off
-					370 tab (settable, boolean) Description: Adobe Digital Experience Certification Program | Course Catalogue, Value: off
-					371 tab (settable, boolean) Description: Universal Business Council - Professional Certification Body, Value: off
-					372 tab (settable, boolean) Description: ChatGPT, Value: off
-					373 tab (settable, boolean) Description: AI Voice Generator & Text to Speech v2 | ElevenLabs, Value: off
-					374 tab (settable, boolean) Description: Qwen Studio, Value: off
-					375 tab (settable, boolean) Description: Notion, Value: off
-					376 tab (settable, boolean) Description: All Mail - fozankhan92@gmail.com - Gmail, Value: off
-					377 tab (settable, boolean) Description: Mercor | Media Analysis Specialists, Value: off
-					378 tab (settable, boolean) Description: Job tracker | LinkedIn, Value: off
-					379 tab (settable, boolean) Description: Cinematographer, Value: off
-					380 tab (settable, boolean) Description: Senior Producer, Video Job Details | Paramount, Value: off
-					381 tab (settable, boolean) Description: YouTube Editor in Los Angeles, California | FOX Careers, Value: off
-					382 tab (settable, boolean) Description: RGP ATS, Value: off
-					383 tab (settable, boolean) Description: Careers at Netflix, Value: off
-					384 tab (settable, boolean) Description: Production Assistant | Sydney,Australia | Netflix, Value: off
-					385 tab (settable, boolean) Description: Photographer/Videographer II | Dayforce Jobs, Value: off
-					386 tab (settable, boolean) Description: Magnific (formerly Freepik) | The AI Creative Platform, Value: off
-					387 tab (settable, boolean) Description: Fozan Khan :: Designers, photographers, illustrators, typographers and artists :: Behance, Value: off
-					388 tab (settable, boolean) Value: off, Description: Fozankhan92/prd-software: Custom all-in-one CRM, HR, ERP, POS, IMS, OMS, SCM, accounting, finance, cloud files, and MCP-ready business platform.
-					389 tab (settable, boolean) Description: Google Account, Value: off
-					390 tab (settable, boolean) Description: Upgrade - Claude, Value: off
-					391 tab (settable, boolean) Description: Google Gemini, Value: off
-					392 tab (settable, boolean) Description: Perplexity, Value: off
-					393 tab (settable, boolean) Description: Log In | Binance, Value: off
-					394 tab (settable, boolean) Description: Projects - Claude, Value: off
-					395 tab (settable, boolean) Description: MovieBox - Watch Movies Free Online, Watch TV Series Online, Value: off
-					396 tab (settable, boolean) Description: Google Sheets, Value: off
-					397 tab (settable, boolean) Description: PRD SOFTWARE - ALL IN ONE SOLUTION - Google Docs, Value: off
-					398 tab (settable, boolean) Description: Login, Value: off
-					399 tab (selected, settable, boolean) Description: prd-software/apps/web/app/page.tsx at main · Fozankhan92/prd-software, Value: on
-						400 button (settable, string) Close
-			401 button (settable, string) New tab
-			402 button (settable, string) Open Gemini in Chrome
-	403 close button
-	404 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
-	405 minimise button
-406 menu bar
-	407 Chrome
-	408 File
+          <input aria-label="Organization name" placeholder="Organization name" value={organization} onChange={(event) => setOrganization(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <input aria-label="Administrator email" placeholder="Administrator email" type="email" value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={bootstrapAdmin} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Save local administrator</button>
+          <small role="status" style={{ color: '#667085' }}>{status}</small>
+        </div>
+      </section>
+
+
+      <section aria-label="Permission assignment" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>Admin permission assignment</h2>
+        <p style={{ color: '#667085' }}>Grant read access first; edit access is a separate approval.</p>
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+          <input aria-label="User or group ID" placeholder="User or group ID" value={permissionSubject} onChange={(event) => setPermissionSubject(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <input aria-label="Resource ID" placeholder="Resource ID" value={permissionResource} onChange={(event) => setPermissionResource(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <select aria-label="Permission level" value={permissionAction} onChange={(event) => setPermissionAction(event.target.value as 'read' | 'edit')} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }}>
+            <option value="read">Read only</option>
+            <option value="edit">Edit approval</option>
+          </select>
+          <button type="button" onClick={grantPermission} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#344054', color: 'white', padding: '10px 16px' }}>Grant permission</button>
+          <small role="status" style={{ color: '#667085' }}>{permissionStatus}</small>
+        </div>
+      </section>
+
+
+
+      <section aria-label="Local session resume" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>Resume local session</h2>
+        <p style={{ color: '#667085' }}>Reopen a session until it is explicitly closed or revoked.</p>
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+          <input aria-label="Session ID" placeholder="Session ID" value={resumeSessionId} onChange={(event) => setResumeSessionId(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            if (!resumeSessionId.trim()) {
+              setResumeStatus('Session ID is required');
+              return;
+            }
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const rows = await database.select<{ id: string; revoked_at: string | null; expires_at: string | null }[]>('SELECT id, revoked_at, expires_at FROM session WHERE id = $1', [resumeSessionId.trim()]);
+              const session = rows[0];
+              if (!session || session.revoked_at || (session.expires_at && session.expires_at <= new Date().toISOString())) {
+                setResumeStatus('Session is unavailable');
+                return;
+              }
+              await database.execute("INSERT OR REPLACE INTO app_metadata (key, value) VALUES ('current_session_id', $1)", [session.id]);
+              setCurrentSessionId(session.id);
+              setResumeStatus('Local session resumed');
+            } catch {
+              setResumeStatus('Open PRD Software inside Tauri to resume sessions');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Resume session</button>
+          <small role="status" style={{ color: '#667085' }}>{resumeStatus}</small>
+        </div>
+      </section>
+
+      <section aria-label="Session controls" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>Session controls</h2>
+        <p style={{ color: '#667085' }}>Sessions remain active until explicitly closed or revoked.</p>
+        <button type="button" disabled={!currentSessionId} onClick={async () => {
+          if (!currentSessionId) return;
+          const database = await Database.load('sqlite:prd.sqlite');
+          await database.execute('UPDATE session SET revoked_at = $1 WHERE id = $2', [new Date().toISOString(), currentSessionId]);
+          await database.execute("DELETE FROM app_metadata WHERE key = 'current_session_id'");
+          setCurrentSessionId(null);
+          setStatus('Local session closed');
+        }} style={{ border: 0, borderRadius: 8, background: '#b42318', color: 'white', padding: '10px 16px' }}>Close current session</button>
+
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520, marginTop: 20 }}>
+          <input aria-label="Session ID to revoke" placeholder="Session ID to revoke" value={revokeSessionId} onChange={(event) => setRevokeSessionId(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            if (!revokeSessionId.trim()) {
+              setRevokeStatus('Session ID is required');
+              return;
+            }
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              await database.execute('UPDATE session SET revoked_at = $1 WHERE id = $2', [new Date().toISOString(), revokeSessionId.trim()]);
+              const revokedAt = new Date().toISOString();
+              await database.execute('INSERT INTO audit_event (id, tenant_id, actor_id, action, resource_type, resource_id, occurred_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [crypto.randomUUID(), 'admin-scope', 'local-admin', 'session_revoked', 'session', revokeSessionId.trim(), revokedAt]);
+              setRevokeSessionId('');
+              setRevokeStatus('Session revoked by administrator');
+            } catch {
+              setRevokeStatus('Open PRD Software inside Tauri to revoke sessions');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#7a271a', color: 'white', padding: '10px 16px' }}>Revoke session</button>
+          <small role="status" style={{ color: '#667085' }}>{revokeStatus}</small>
+        </div>
+      </section>
+
+
+      <section aria-label="User management" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>Organization users</h2>
+        <p style={{ color: '#667085' }}>Create users and assign role and account status. Email is optional for desktop-only users, but adding one is encouraged for notifications and identification.</p>
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+          <input aria-label="User email" placeholder="User email" type="email" value={userEmail} onChange={(event) => setUserEmail(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <input aria-label="Display name" placeholder="Display name" value={userDisplayName} onChange={(event) => setUserDisplayName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <select aria-label="User role" value={userRole} onChange={(event) => setUserRole(event.target.value as typeof userRole)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }}>
+            <option value="staff">Staff</option>
+            <option value="manager">Manager</option>
+            <option value="department_admin">Department admin</option>
+            <option value="organization_admin">Organization admin</option>
+          </select>
+          <select aria-label="User status" value={userStatus} onChange={(event) => setUserStatus(event.target.value as typeof userStatus)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }}>
+            <option value="active">Active</option>
+            <option value="invited">Invited</option>
+            <option value="suspended">Suspended</option>
+          </select>
+          <button type="button" onClick={async () => {
+            if (!userDisplayName.trim()) {
+              setUserStatusMessage('Display name is required; email is optional but encouraged');
+              return;
+            }
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId) throw new Error('organization_required');
+              const userId = crypto.randomUUID();
+              const now = new Date().toISOString();
+              await database.execute('INSERT INTO app_user (id, tenant_id, email, display_name, role, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [userId, tenantId, userEmail.trim(), userDisplayName.trim(), userRole, userStatus, now]);
+              await database.execute('INSERT INTO audit_event (id, tenant_id, actor_id, action, resource_type, resource_id, occurred_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [crypto.randomUUID(), tenantId, (await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_user_id']))[0]?.value ?? 'unknown', 'user_created', 'app_user', userId, now]);
+              setUserEmail('');
+              setUserDisplayName('');
+              setUserStatusMessage('User created locally');
+            } catch {
+              setUserStatusMessage('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Save user</button>
+          <small role="status" style={{ color: '#667085' }}>{userStatusMessage}</small>
+        </div>
+        <div style={{ marginTop: 24 }}>
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId) throw new Error('organization_required');
+              const directory = new LocalUserDirectory();
+              setUsers(await directory.list(tenantId));
+              setUsersStatus('User list loaded');
+            } catch {
+              setUsersStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load users</button>
+          <small role="status" style={{ display: 'block', color: '#667085', marginTop: 8 }}>{usersStatus}</small>
+          <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>
+            {users.map((user) => (
+              <div key={user.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #eaecf0', padding: '10px 0' }}>
+                <span>{user.displayName} · {user.email} · {user.status}</span>
+                <button type="button" onClick={async () => {
+                  await new LocalUserDirectory().setStatus(user.id, user.status === 'suspended' ? 'active' : 'suspended');
+                  setUsers((current) => current.map((item) => item.id === user.id ? { ...item, status: item.status === 'suspended' ? 'active' : 'suspended' } : item));
+                }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '6px 10px' }}>{user.status === 'suspended' ? 'Reactivate' : 'Suspend'}</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      <section aria-label="CRM" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>CRM contacts and organizations</h2>
+        <p style={{ color: '#667085' }}>Manage tenant-scoped organizations and contacts locally.</p>
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+          <input aria-label="CRM organization name" placeholder="Organization name" value={crmOrganizationName} onChange={(event) => setCrmOrganizationName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId || !crmOrganizationName.trim()) throw new Error('crm_context_required');
+              await new LocalCrmDirectory().createOrganization({ tenantId, name: crmOrganizationName.trim() });
+              setCrmOrganizationName('');
+              setCrmStatus('Organization saved');
+            } catch {
+              setCrmStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Save organization</button>
+          <input aria-label="CRM contact first name" placeholder="Contact first name" value={crmContactFirstName} onChange={(event) => setCrmContactFirstName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <input aria-label="CRM contact last name" placeholder="Contact last name" value={crmContactLastName} onChange={(event) => setCrmContactLastName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId || !crmContactFirstName.trim() || !crmContactLastName.trim()) throw new Error('crm_context_required');
+              await new LocalCrmDirectory().createContact({ tenantId, firstName: crmContactFirstName.trim(), lastName: crmContactLastName.trim() });
+              setCrmContactFirstName('');
+              setCrmContactLastName('');
+              setCrmStatus('Contact saved');
+            } catch {
+              setCrmStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#344054', color: 'white', padding: '10px 16px' }}>Save contact</button>
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId) throw new Error('crm_context_required');
+              const directory = new LocalCrmDirectory();
+              setCrmOrganizations((await directory.listOrganizations(tenantId)).map(({ id, name }) => ({ id, name })));
+              setCrmContacts((await directory.listContacts(tenantId)).map(({ id, firstName, lastName }) => ({ id, firstName, lastName })));
+              setCrmStatus('CRM data loaded');
+            } catch {
+              setCrmStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load CRM data</button>
+          <small role="status" style={{ color: '#667085' }}>{crmStatus}</small>
+          <small>Organizations: {crmOrganizations.length} · Contacts: {crmContacts.length}</small>
+        </div>
+      </section>
+
+
+      <section aria-label="HR" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>HR departments and employees</h2>
+        <p style={{ color: '#667085' }}>Manage tenant-scoped departments and employees locally.</p>
+        <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
+          <input aria-label="HR department name" placeholder="Department name" value={hrDepartmentName} onChange={(event) => setHrDepartmentName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId || !hrDepartmentName.trim()) throw new Error('hr_context_required');
+              await new LocalHrDirectory().createDepartment({ tenantId, name: hrDepartmentName.trim() });
+              setHrDepartmentName('');
+              setHrStatus('Department saved');
+            } catch {
+              setHrStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#175cd3', color: 'white', padding: '10px 16px' }}>Save department</button>
+          <input aria-label="HR employee first name" placeholder="Employee first name" value={hrFirstName} onChange={(event) => setHrFirstName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <input aria-label="HR employee last name" placeholder="Employee last name" value={hrLastName} onChange={(event) => setHrLastName(event.target.value)} style={{ padding: 12, border: '1px solid #d0d5dd', borderRadius: 8 }} />
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId || !hrFirstName.trim() || !hrLastName.trim()) throw new Error('hr_context_required');
+              await new LocalHrDirectory().createEmployee({ tenantId, firstName: hrFirstName.trim(), lastName: hrLastName.trim(), employmentStatus: 'active' });
+              setHrFirstName('');
+              setHrLastName('');
+              setHrStatus('Employee saved');
+            } catch {
+              setHrStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: 0, borderRadius: 8, background: '#344054', color: 'white', padding: '10px 16px' }}>Save employee</button>
+          <button type="button" onClick={async () => {
+            try {
+              const database = await Database.load('sqlite:prd.sqlite');
+              const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+              const tenantId = metadata[0]?.value;
+              if (!tenantId) throw new Error('hr_context_required');
+              const directory = new LocalHrDirectory();
+              setHrDepartments((await directory.listDepartments(tenantId)).map(({ id, name }) => ({ id, name })));
+              setHrEmployees((await directory.listEmployees(tenantId)).map(({ id, firstName, lastName }) => ({ id, firstName, lastName })));
+              setHrStatus('HR data loaded');
+            } catch {
+              setHrStatus('Complete administrator setup inside Tauri first');
+            }
+          }} style={{ width: 'fit-content', border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load HR data</button>
+          <small role="status" style={{ color: '#667085' }}>{hrStatus}</small>
+          <small>Departments: {hrDepartments.length} · Employees: {hrEmployees.length}</small>
+        </div>
+      </section>
+
+
+      <section aria-label="ERP" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>ERP items, suppliers, and purchasing</h2>
+        <p style={{ color: '#667085' }}>Load generic ERP records for this organization.</p>
+        <button type="button" onClick={async () => {
+          try {
+            const database = await Database.load('sqlite:prd.sqlite');
+            const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+            const tenantId = metadata[0]?.value;
+            if (!tenantId) throw new Error('erp_context_required');
+            const directory = new LocalErpDirectory();
+            setErpItems((await directory.listItems(tenantId)).map(({ id, name }) => ({ id, name })));
+            setErpSuppliers((await directory.listSuppliers(tenantId)).map(({ id, name }) => ({ id, name })));
+            setErpPurchaseOrders((await directory.listPurchaseOrders(tenantId)).map(({ id, status }) => ({ id, status })));
+            setErpStatus('ERP data loaded');
+          } catch {
+            setErpStatus('Complete administrator setup inside Tauri first');
+          }
+        }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load ERP data</button>
+        <small role="status" style={{ display: 'block', color: '#667085', marginTop: 8 }}>{erpStatus}</small>
+        <small>Items: {erpItems.length} · Suppliers: {erpSuppliers.length} · Purchase orders: {erpPurchaseOrders.length}</small>
+      </section>
+
+
+      <section aria-label="OMS and SCM" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>OMS orders and SCM shipments</h2>
+        <p style={{ color: '#667085' }}>Track generic orders and shipment progress for this organization.</p>
+        <button type="button" onClick={async () => {
+          try {
+            const database = await Database.load('sqlite:prd.sqlite');
+            const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+            const tenantId = metadata[0]?.value;
+            if (!tenantId) throw new Error('oms_context_required');
+            setOmsOrders((await new LocalOmsDirectory().listOrders(tenantId)).map(({ id, status }) => ({ id, status })));
+            setScmShipments((await new LocalScmDirectory().listShipments(tenantId)).map(({ id, status }) => ({ id, status })));
+            setOmsStatus('OMS/SCM data loaded');
+          } catch {
+            setOmsStatus('Complete administrator setup inside Tauri first');
+          }
+        }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load OMS/SCM data</button>
+        <small role="status" style={{ display: 'block', color: '#667085', marginTop: 8 }}>{omsStatus}</small>
+        <small>Orders: {omsOrders.length} · Shipments: {scmShipments.length}</small>
+      </section>
+
+
+      <section aria-label="Accounting and finance" style={{ marginTop: 40, border: '1px solid #d0d5dd', borderRadius: 12, padding: 24 }}>
+        <h2>Accounting and finance</h2>
+        <p style={{ color: '#667085' }}>Load generic accounts, journal entries, and budgets for this organization.</p>
+        <button type="button" onClick={async () => {
+          try {
+            const database = await Database.load('sqlite:prd.sqlite');
+            const metadata = await database.select<{ value: string }[]>('SELECT value FROM app_metadata WHERE key = $1', ['current_tenant_id']);
+            const tenantId = metadata[0]?.value;
+            if (!tenantId) throw new Error('finance_context_required');
+            const directory = new LocalAccountingDirectory();
+            setAccounts((await directory.listAccounts(tenantId)).map(({ id, name }) => ({ id, name })));
+            setJournalEntries((await directory.listJournalEntries(tenantId)).map(({ id, description }) => ({ id, description })));
+            setBudgets((await directory.listBudgets(tenantId)).map(({ id, name }) => ({ id, name })));
+            setFinanceStatus('Accounting/finance data loaded');
+          } catch {
+            setFinanceStatus('Complete administrator setup inside Tauri first');
+          }
+        }} style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>Load accounting/finance data</button>
+        <small role="status" style={{ display: 'block', color: '#667085', marginTop: 8 }}>{financeStatus}</small>
+        <small>Accounts: {accounts.length} · Journal entries: {journalEntries.length} · Budgets: {budgets.length}</small>
+      </section>
+
+      <section aria-label="Modules" style={{ marginTop: 40 }}>
+        <h2>Business modules</h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          {modules.map((module) => <button key={module} type="button" style={{ border: '1px solid #d0d5dd', borderRadius: 8, background: 'white', padding: '10px 14px' }}>{module}</button>)}
+        </div>
+      </section>
+    </main>
+  );
+}
