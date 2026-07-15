@@ -1,6 +1,6 @@
 
-i.                    port { createElement, useMemo, useState } from "react";
-import { DesktopShell, type DesktopNavItem } from "../components";
+
+import { createElement, useMemo, useState } from "react";import { DesktopShell, type DesktopNavItem } from "../components";
 import { desktopNavigation } from "./module-navigation";
 import { applyNavigationPermissions, type ModulePermissionMap } from "./navigation-permissions";
 
