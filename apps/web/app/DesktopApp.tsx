@@ -5,10 +5,10 @@ import { applyNavigationPermissions, type ModulePermissionMap } from "./navigati
 
 export type DesktopAppProps = { permissions?: ModulePermissionMap };
 
-const moduleContent: Record<string, { eyebrow: string; title: string; summary: string; actions: string[] }> = {
+const moduleContent: Record<string, { eyebrow: string; title: string; summary: string; actions: string[]; metrics?: string[] }> = {
   home: { eyebrow: "Executive workspace", title: "Operations overview", summary: "Monitor organization-wide activity, approvals, and exceptions.", actions: ["View summary", "Open approvals"] },
   admin: { eyebrow: "Control center", title: "Administration", summary: "Manage users, roles, permissions, sessions, and audit history.", actions: ["Manage users", "Review permissions", "Open audit log"] },
-  crm: { eyebrow: "Customer operations", title: "CRM workbench", summary: "Manage organizations, contacts, leads, opportunities, and customer activity.", actions: ["New contact", "Open pipeline", "View activities"] },
+  crm: { eyebrow: "Customer operations", title: "CRM workbench", summary: "Manage organizations, contacts, leads, opportunities, and customer activity.", actions: ["New contact", "Open pipeline", "View activities"], metrics: ["Contacts", "Open opportunities", "Tasks due", "Recent activity"] },
   hr: { eyebrow: "People operations", title: "HR workbench", summary: "Manage employees, departments, attendance, leave, payroll inputs, and documents.", actions: ["Add employee", "Open directory", "Review approvals"] },
   erp: { eyebrow: "Core operations", title: "ERP / Inventory workbench", summary: "Coordinate items, suppliers, purchasing, receiving, and stock controls.", actions: ["New item", "Create purchase order", "View stock"] },
   pos: { eyebrow: "Retail operations", title: "POS workbench", summary: "Open registers, process sales, returns, payments, and end-of-day closing.", actions: ["Open register", "New sale", "Close register"] },
@@ -32,6 +32,7 @@ export function DesktopApp({ permissions = {} }: DesktopAppProps) {
         <p className="desktop-shell__eyebrow">{content.eyebrow}</p>
         <h2 id="workspace-heading">{content.title}</h2>
         <p>{content.summary}</p>
+        {content.metrics ? <div className="desktop-workbench__metrics" aria-label={content.title + " summary"}>{content.metrics.map((metric) => <article key={metric}><strong>—</strong><span>{metric}</span></article>)}</div> : null}
         <div className="desktop-workbench__actions" aria-label={content.title + " actions"}>
           {content.actions.map((action) => <button type="button" key={action}>{action}</button>)}
         </div>
