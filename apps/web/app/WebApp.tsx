@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { desktopNavigation } from './module-navigation';
-import { createWebRecord, loadWebWorkspace, saveWebWorkspace, type WebCrmRecord, type WebWorkspaceState } from '../web-store';
+import { createWebRecord, loadWebWorkspace, saveWebWorkspace, type WebCrmRecord, type WebWorkspaceState } from './web-store';
 import './web-app.css';
 
 type ModuleId = (typeof desktopNavigation)[number]['id'];
