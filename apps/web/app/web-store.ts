@@ -15,6 +15,7 @@ export type WebWorkspaceState = {
   records: WebCrmRecord[];
   permissions: WebPermission[];
   files: WebFile[];
+  lineItems: WebLineItem[];
   customFields: string[];
   customPipelineStages: string[];
 };
@@ -22,9 +23,10 @@ export type WebWorkspaceState = {
 export type WebSession = { id: string; tenantId: string; userId: string; displayName: string; openedAt: string };
 export type WebPermission = { id: string; subject: string; resource: string; canRead: boolean; canEdit: boolean };
 export type WebFile = { id: string; name: string; size: number; type: string; uploadedAt: string; storage: 'browser' | 'cloud-ready' };
+export type WebLineItem = { id: string; parentRecordId: string; description: string; quantity: number; unitPrice: number; total: number };
 
 const storageKey = 'prd-software-web-workspace-v1';
-const emptyState: WebWorkspaceState = { organization: '', adminName: '', tenantId: '', session: null, records: [], permissions: [], files: [], customFields: [], customPipelineStages: [] };
+const emptyState: WebWorkspaceState = { organization: '', adminName: '', tenantId: '', session: null, records: [], permissions: [], files: [], lineItems: [], customFields: [], customPipelineStages: [] };
 
 function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -44,6 +46,7 @@ export function loadWebWorkspace(): WebWorkspaceState {
       records: Array.isArray(parsed.records) ? parsed.records : [],
       permissions: Array.isArray(parsed.permissions) ? parsed.permissions : [],
       files: Array.isArray(parsed.files) ? parsed.files : [],
+      lineItems: Array.isArray(parsed.lineItems) ? parsed.lineItems : [],
       customFields: Array.isArray(parsed.customFields) ? parsed.customFields : [],
       customPipelineStages: Array.isArray(parsed.customPipelineStages) ? parsed.customPipelineStages : [],
     };
@@ -74,6 +77,10 @@ export function grantWebPermission(subject: string, resource: string, canEdit: b
 
 export function createWebFile(file: Pick<File, 'name' | 'size' | 'type'>): WebFile {
   return { id: crypto.randomUUID(), name: file.name, size: file.size, type: file.type || 'application/octet-stream', uploadedAt: new Date().toISOString(), storage: 'cloud-ready' };
+}
+
+export function createWebLineItem(parentRecordId: string, description: string, quantity: number, unitPrice: number): WebLineItem {
+  return { id: crypto.randomUUID(), parentRecordId, description, quantity, unitPrice, total: quantity * unitPrice };
 }
 
 export function exportWorkspace(state: WebWorkspaceState): void {
