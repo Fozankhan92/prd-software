@@ -9,6 +9,8 @@ import { LocalErpDirectory } from '../erp-directory';
 import { LocalOmsDirectory } from '../oms-directory';
 import { LocalScmDirectory } from '../scm-directory';
 import { LocalAccountingDirectory } from '../accounting-directory';
+import { DesktopApp } from './DesktopApp';
+import { DesktopEntryPoint } from './DesktopEntryPoint';
 
 const cards = [
   ['Revenue', '—', 'Connect finance data'],
@@ -129,6 +131,10 @@ export default function HomePage() {
   }
 
   return (
+    <DesktopEntryPoint
+      useNativeShell={false}
+      nativeWorkspace={<DesktopApp />}
+      legacyWorkspace={
     <main style={{ fontFamily: 'system-ui', maxWidth: 1100, margin: '0 auto', padding: 32 }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 24 }}>
         <div>
@@ -493,5 +499,7 @@ export default function HomePage() {
         </div>
       </section>
     </main>
+      }
+    />
   );
 }
