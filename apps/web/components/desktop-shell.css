@@ -284,3 +284,33 @@
   border-radius: 999px;
   background: #64748b;
 }
+
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --prd-bg: #0b1220;
+    --prd-surface: #111827;
+    --prd-ink: #e5eefc;
+    --prd-muted: #9aa7b8;
+    --prd-border: #263348;
+    --prd-accent: #7aa2ff;
+  }
+
+  .desktop-shell__header {
+    background: rgba(17, 24, 39, 0.88);
+    border-bottom-color: rgba(38, 51, 72, 0.86);
+  }
+
+  .desktop-shell__content > section {
+    border-color: rgba(38, 51, 72, 0.9);
+    background: rgba(17, 24, 39, 0.78);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
+  }
+
+  .desktop-shell__actions button,
+  .desktop-workbench__actions button {
+    background: #172033;
+    color: var(--prd-ink);
+    border-color: var(--prd-border);
+  }
+}
