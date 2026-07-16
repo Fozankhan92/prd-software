@@ -280,7 +280,10 @@ export function WebApp() {
   function createRenewal(contractId: string) {
     const contract = workspace.records.find((record) => record.id === contractId && record.kind === 'contract');
     if (!contract) return;
-    const renewal = createWebRecord('renewal', `Renewal for ${contract.name}`, `Created from contract: ${contract.id} · ${contract.detail}`, 'Upcoming');
+    const endDate = contract.detail.match(/End date: (\d{4}-\d{2}-\d{2})/)?.[1];
+    const preparationDate = endDate ? new Date(`${endDate}T00:00:00`) : null;
+    if (preparationDate) preparationDate.setDate(preparationDate.getDate() - 90);
+    const renewal = createWebRecord('renewal', `Renewal for ${contract.name}`, `Created from contract: ${contract.id} · ${contract.detail}${preparationDate ? ` · Renewal preparation date: ${preparationDate.toISOString().slice(0, 10)}` : ' · Renewal preparation lead time: 90 days'}`, 'Upcoming');
     saveWorkspace({ ...workspace, records: [renewal, ...workspace.records] }, 'Renewal opportunity created from contract.');
   }
 
