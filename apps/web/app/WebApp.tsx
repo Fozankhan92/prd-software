@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { desktopNavigation } from './module-navigation';
-import { createTenantId, createWebApproval, createWebFile, createWebLineItem, createWebRecord, exportWorkspace, grantWebPermission, loadWebWorkspace, openWebSession, saveWebWorkspace, type WebCrmRecord, type WebWorkspaceState } from './web-store';
+import { createTenantId, createWebApproval, createWebCampaignMember, createWebFile, createWebLineItem, createWebPortalShare, createWebRecord, exportWorkspace, grantWebPermission, loadWebWorkspace, openWebSession, saveWebWorkspace, type WebCrmRecord, type WebWorkspaceState } from './web-store';
 import './web-app.css';
 
 type ModuleId = (typeof desktopNavigation)[number]['id'];
@@ -218,7 +218,10 @@ export function WebApp() {
     const discount = recordKind === 'quotation' ? Number(recordFields.discount?.replace('%', '') || 0) : 0;
     const quotationApproval = recordKind === 'quotation' && discount > 15 ? 'Director and finance approval required' : recordKind === 'quotation' && discount > 5 ? 'Sales manager approval required' : '';
     const approvalAction = quotationApproval || `Review ${recordLabels[recordKind].toLowerCase()}`;
-    const next = { ...workspace, records: [newRecord, ...workspace.records], lineItems: [...workspace.lineItems, ...draftLineItems.map((item) => createWebLineItem(newRecord.id, item.description, item.quantity, item.unitPrice))], approvals: approvalKinds.includes(recordKind) && (recordKind !== 'quotation' || discount > 5) ? [createWebApproval(newRecord.id, recordLabels[recordKind], approvalAction), ...workspace.approvals] : workspace.approvals };
+    const shareAudience = recordFields.portalShare?.trim();
+    const portalShares = shareAudience && ['service-case', 'complaint'].includes(recordKind) ? [createWebPortalShare(newRecord.id, shareAudience), ...workspace.portalShares] : workspace.portalShares;
+    const campaignMembers = recordKind === 'campaign' && recordFields.members?.trim() ? recordFields.members.split(',').map((member) => createWebCampaignMember(newRecord.id, member.trim(), recordFields.source)).filter((member) => member.subject) : [];
+    const next = { ...workspace, records: [newRecord, ...workspace.records], lineItems: [...workspace.lineItems, ...draftLineItems.map((item) => createWebLineItem(newRecord.id, item.description, item.quantity, item.unitPrice))], approvals: approvalKinds.includes(recordKind) && (recordKind !== 'quotation' || discount > 5) ? [createWebApproval(newRecord.id, recordLabels[recordKind], approvalAction), ...workspace.approvals] : workspace.approvals, portalShares, campaignMembers: [...campaignMembers, ...workspace.campaignMembers] };
     saveWorkspace(next, `${recordLabels[recordKind]} added to the web workspace.`);
     setRecordName('');
     setRecordDetail('');
