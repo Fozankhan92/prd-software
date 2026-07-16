@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { desktopNavigation } from './module-navigation';
-import { createTenantId, createWebFile, createWebLineItem, createWebRecord, exportWorkspace, grantWebPermission, loadWebWorkspace, openWebSession, saveWebWorkspace, type WebCrmRecord, type WebWorkspaceState } from './web-store';
+import { createTenantId, createWebApproval, createWebFile, createWebLineItem, createWebRecord, exportWorkspace, grantWebPermission, loadWebWorkspace, openWebSession, saveWebWorkspace, type WebCrmRecord, type WebWorkspaceState } from './web-store';
 import './web-app.css';
 
 type ModuleId = (typeof desktopNavigation)[number]['id'];
@@ -180,7 +180,8 @@ export function WebApp() {
     const detailParts = [recordDetail.trim(), ...dynamicDetails, weightedValue, recordRelationship.trim() ? `Related to: ${recordRelationship.trim()}` : '', recordOwner.trim() ? `Owner: ${recordOwner.trim()}` : '', recordAmount.trim() ? `Amount: ${recordAmount.trim()}` : '', recordDate ? `Date: ${recordDate}` : '', crmView === 'service' ? `Priority: ${recordPriority}` : ''].filter(Boolean);
     const detail = [...detailParts, draftLineItems.length ? `Line items: ${draftLineItems.map((item) => `${item.description} x${item.quantity} @ ${item.unitPrice}`).join('; ')}` : ''].filter(Boolean).join(' · ');
     const newRecord = createWebRecord(recordKind, recordName.trim(), detail, recordStatus);
-    const next = { ...workspace, records: [newRecord, ...workspace.records], lineItems: [...workspace.lineItems, ...draftLineItems.map((item) => createWebLineItem(newRecord.id, item.description, item.quantity, item.unitPrice))] };
+    const approvalKinds: WebCrmRecord['kind'][] = ['quotation', 'sales-order', 'contract', 'credit-limit'];
+    const next = { ...workspace, records: [newRecord, ...workspace.records], lineItems: [...workspace.lineItems, ...draftLineItems.map((item) => createWebLineItem(newRecord.id, item.description, item.quantity, item.unitPrice))], approvals: approvalKinds.includes(recordKind) ? [createWebApproval(newRecord.id, recordLabels[recordKind], `Review ${recordLabels[recordKind].toLowerCase()}`), ...workspace.approvals] : workspace.approvals };
     saveWorkspace(next, `${recordLabels[recordKind]} added to the web workspace.`);
     setRecordName('');
     setRecordDetail('');
@@ -240,6 +241,12 @@ export function WebApp() {
     if (!record) return;
     if (!window.confirm(`Delete this ${recordLabels[record.kind].toLowerCase()}?`)) return;
     saveWorkspace({ ...workspace, records: workspace.records.filter((item) => item.id !== recordId) }, `${recordLabels[record.kind]} deleted.`);
+  }
+
+  function setApprovalStatus(approvalId: string, status: 'Approved' | 'Rejected') {
+    const approval = workspace.approvals.find((item) => item.id === approvalId);
+    if (!approval) return;
+    saveWorkspace({ ...workspace, approvals: workspace.approvals.map((item) => item.id === approvalId ? { ...item, status } : item) }, `Approval ${status.toLowerCase()}.`);
   }
 
   function addCustomField(event: React.FormEvent<HTMLFormElement>) {
@@ -315,6 +322,7 @@ export function WebApp() {
           {activeModule === 'files' ? <section className="web-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">Cloud file boundary</p><h3>Files and controlled sharing</h3></div><span className="web-card__hint">Cloud-ready</span></div><label className="web-file-drop">Choose a file<input type="file" onChange={addFile} /></label><div className="web-records">{workspace.files.length ? workspace.files.map((file) => <article key={file.id}><span className="web-record-icon">F</span><div><strong>{file.name}</strong><small>{Math.ceil(file.size / 1024)} KB · {file.storage} · uploaded {new Date(file.uploadedAt).toLocaleDateString()}</small></div></article>) : <div className="web-empty">No files added yet.</div>}</div></section> : null}
 
           {activeModule !== 'home' && activeModule !== 'crm' ? <section className="web-card web-placeholder"><span className="web-placeholder__icon">{desktopNavigation.find((item) => item.id === activeModule)?.label.slice(0, 1)}</span><h3>{desktopNavigation.find((item) => item.id === activeModule)?.label} foundation</h3><p>{moduleDescriptions[activeModule]} The web foundation is ready for its detailed forms, workflows, reports, and permission-aware database services.</p><button type="button" className="web-button web-button--secondary" onClick={() => setMessage('This module is queued for its detailed web workflow.')}>Plan module workflow</button></section> : null}
+          {activeModule === 'admin' ? <section className="web-card web-approval-inbox"><div className="web-card__heading"><div><p className="web-app__eyebrow">Phase 2 controls</p><h3>Approval inbox</h3></div><span className="web-card__hint">{workspace.approvals.filter((item) => item.status === 'Pending').length} pending</span></div><div className="web-records">{workspace.approvals.length ? workspace.approvals.map((approval) => <article key={approval.id}><span className="web-record-icon">{approval.status === 'Pending' ? '!' : approval.status.slice(0, 1)}</span><div><strong>{approval.requestedAction}</strong><small>{approval.recordType} · {approval.status} · requested {new Date(approval.requestedAt).toLocaleString()}</small>{approval.status === 'Pending' ? <div><button className="web-button web-button--secondary" type="button" onClick={() => setApprovalStatus(approval.id, 'Approved')}>Approve</button><button className="web-button web-button--danger" type="button" onClick={() => setApprovalStatus(approval.id, 'Rejected')}>Reject</button></div> : null}</div></article>) : <div className="web-empty">No approval requests yet.</div>}</div></section> : null}
           {message ? <p className="web-message" role="status">{message}</p> : null}
         </section>
       </main>
