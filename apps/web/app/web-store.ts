@@ -16,6 +16,7 @@ export type WebWorkspaceState = {
   permissions: WebPermission[];
   files: WebFile[];
   lineItems: WebLineItem[];
+  approvals: WebApproval[];
   customFields: string[];
   customPipelineStages: string[];
 };
@@ -24,9 +25,10 @@ export type WebSession = { id: string; tenantId: string; userId: string; display
 export type WebPermission = { id: string; subject: string; resource: string; canRead: boolean; canEdit: boolean };
 export type WebFile = { id: string; name: string; size: number; type: string; uploadedAt: string; storage: 'browser' | 'cloud-ready' };
 export type WebLineItem = { id: string; parentRecordId: string; description: string; quantity: number; unitPrice: number; total: number };
+export type WebApproval = { id: string; recordId: string; recordType: string; requestedAction: string; status: 'Pending' | 'Approved' | 'Rejected'; requestedAt: string };
 
 const storageKey = 'prd-software-web-workspace-v1';
-const emptyState: WebWorkspaceState = { organization: '', adminName: '', tenantId: '', session: null, records: [], permissions: [], files: [], lineItems: [], customFields: [], customPipelineStages: [] };
+const emptyState: WebWorkspaceState = { organization: '', adminName: '', tenantId: '', session: null, records: [], permissions: [], files: [], lineItems: [], approvals: [], customFields: [], customPipelineStages: [] };
 
 function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -47,6 +49,7 @@ export function loadWebWorkspace(): WebWorkspaceState {
       permissions: Array.isArray(parsed.permissions) ? parsed.permissions : [],
       files: Array.isArray(parsed.files) ? parsed.files : [],
       lineItems: Array.isArray(parsed.lineItems) ? parsed.lineItems : [],
+      approvals: Array.isArray(parsed.approvals) ? parsed.approvals : [],
       customFields: Array.isArray(parsed.customFields) ? parsed.customFields : [],
       customPipelineStages: Array.isArray(parsed.customPipelineStages) ? parsed.customPipelineStages : [],
     };
@@ -81,6 +84,10 @@ export function createWebFile(file: Pick<File, 'name' | 'size' | 'type'>): WebFi
 
 export function createWebLineItem(parentRecordId: string, description: string, quantity: number, unitPrice: number): WebLineItem {
   return { id: crypto.randomUUID(), parentRecordId, description, quantity, unitPrice, total: quantity * unitPrice };
+}
+
+export function createWebApproval(recordId: string, recordType: string, requestedAction: string): WebApproval {
+  return { id: crypto.randomUUID(), recordId, recordType, requestedAction, status: 'Pending', requestedAt: new Date().toISOString() };
 }
 
 export function exportWorkspace(state: WebWorkspaceState): void {
