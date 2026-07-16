@@ -25,7 +25,8 @@ export type WebSession = { id: string; tenantId: string; userId: string; display
 export type WebPermission = { id: string; subject: string; resource: string; canRead: boolean; canEdit: boolean };
 export type WebFile = { id: string; name: string; size: number; type: string; uploadedAt: string; storage: 'browser' | 'cloud-ready' };
 export type WebLineItem = { id: string; parentRecordId: string; description: string; quantity: number; unitPrice: number; total: number };
-export type WebApproval = { id: string; recordId: string; recordType: string; requestedAction: string; status: 'Pending' | 'Approved' | 'Rejected'; requestedAt: string };
+export type WebApprovalEvent = { status: 'Pending' | 'Approved' | 'Rejected'; at: string };
+export type WebApproval = { id: string; recordId: string; recordType: string; requestedAction: string; status: 'Pending' | 'Approved' | 'Rejected'; requestedAt: string; history: WebApprovalEvent[] };
 
 const storageKey = 'prd-software-web-workspace-v1';
 const emptyState: WebWorkspaceState = { organization: '', adminName: '', tenantId: '', session: null, records: [], permissions: [], files: [], lineItems: [], approvals: [], customFields: [], customPipelineStages: [] };
@@ -87,7 +88,8 @@ export function createWebLineItem(parentRecordId: string, description: string, q
 }
 
 export function createWebApproval(recordId: string, recordType: string, requestedAction: string): WebApproval {
-  return { id: crypto.randomUUID(), recordId, recordType, requestedAction, status: 'Pending', requestedAt: new Date().toISOString() };
+  const requestedAt = new Date().toISOString();
+  return { id: crypto.randomUUID(), recordId, recordType, requestedAction, status: 'Pending', requestedAt, history: [{ status: 'Pending', at: requestedAt }] };
 }
 
 export function exportWorkspace(state: WebWorkspaceState): void {
