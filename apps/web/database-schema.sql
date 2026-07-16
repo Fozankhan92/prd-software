@@ -11,6 +11,13 @@ create table if not exists workspace_tenant (
   created_at timestamptz not null default now()
 );
 
+create table if not exists workspace_snapshot (
+  tenant_id uuid primary key references workspace_tenant(id) on delete cascade,
+  state jsonb not null default '{}'::jsonb,
+  version text not null default '1',
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists crm_record (
   id uuid primary key default gen_random_uuid(),
   tenant_id uuid not null references workspace_tenant(id) on delete cascade,
