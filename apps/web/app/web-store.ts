@@ -17,6 +17,8 @@ export type WebWorkspaceState = {
   files: WebFile[];
   lineItems: WebLineItem[];
   approvals: WebApproval[];
+  portalShares: WebPortalShare[];
+  campaignMembers: WebCampaignMember[];
   customFields: string[];
   customPipelineStages: string[];
 };
@@ -27,9 +29,11 @@ export type WebFile = { id: string; name: string; size: number; type: string; up
 export type WebLineItem = { id: string; parentRecordId: string; description: string; quantity: number; unitPrice: number; total: number };
 export type WebApprovalEvent = { status: 'Pending' | 'Approved' | 'Rejected'; at: string };
 export type WebApproval = { id: string; recordId: string; recordType: string; requestedAction: string; status: 'Pending' | 'Approved' | 'Rejected'; requestedAt: string; history: WebApprovalEvent[] };
+export type WebPortalShare = { id: string; recordId: string; audience: string; access: 'Read only'; expiresAt?: string; createdAt: string };
+export type WebCampaignMember = { id: string; campaignId: string; subject: string; status: 'Targeted' | 'Responded' | 'Converted'; source?: string };
 
 const storageKey = 'prd-software-web-workspace-v1';
-const emptyState: WebWorkspaceState = { organization: '', adminName: '', tenantId: '', session: null, records: [], permissions: [], files: [], lineItems: [], approvals: [], customFields: [], customPipelineStages: [] };
+const emptyState: WebWorkspaceState = { organization: '', adminName: '', tenantId: '', session: null, records: [], permissions: [], files: [], lineItems: [], approvals: [], portalShares: [], campaignMembers: [], customFields: [], customPipelineStages: [] };
 
 function canUseStorage(): boolean {
   return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
@@ -51,6 +55,8 @@ export function loadWebWorkspace(): WebWorkspaceState {
       files: Array.isArray(parsed.files) ? parsed.files : [],
       lineItems: Array.isArray(parsed.lineItems) ? parsed.lineItems : [],
       approvals: Array.isArray(parsed.approvals) ? parsed.approvals : [],
+      portalShares: Array.isArray(parsed.portalShares) ? parsed.portalShares : [],
+      campaignMembers: Array.isArray(parsed.campaignMembers) ? parsed.campaignMembers : [],
       customFields: Array.isArray(parsed.customFields) ? parsed.customFields : [],
       customPipelineStages: Array.isArray(parsed.customPipelineStages) ? parsed.customPipelineStages : [],
     };
@@ -90,6 +96,14 @@ export function createWebLineItem(parentRecordId: string, description: string, q
 export function createWebApproval(recordId: string, recordType: string, requestedAction: string): WebApproval {
   const requestedAt = new Date().toISOString();
   return { id: crypto.randomUUID(), recordId, recordType, requestedAction, status: 'Pending', requestedAt, history: [{ status: 'Pending', at: requestedAt }] };
+}
+
+export function createWebPortalShare(recordId: string, audience: string): WebPortalShare {
+  return { id: crypto.randomUUID(), recordId, audience, access: 'Read only', createdAt: new Date().toISOString() };
+}
+
+export function createWebCampaignMember(campaignId: string, subject: string, source?: string): WebCampaignMember {
+  return { id: crypto.randomUUID(), campaignId, subject, source, status: 'Targeted' };
 }
 
 export function exportWorkspace(state: WebWorkspaceState): void {
