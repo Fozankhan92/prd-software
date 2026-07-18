@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveWorkspaceRoute, workspaceApiRoutes, type WorkspaceApiResponse } from './api-contract';
+import { resolveWorkspaceRoute, workspaceApiRoutes, type WorkspaceApiResponse } from '../../../api-contract';
 
 describe('workspace API contract', () => {
   it('resolves tenant-scoped routes safely', () => {
