@@ -8,9 +8,6 @@ on:
 jobs:
   desktop-shell:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -20,10 +17,14 @@ jobs:
         with:
           node-version: 22
       - run: pnpm install
+        working-directory: apps/web
       - run: pnpm test
-      - run: pnpm run lint
+        working-directory: apps/web
+      - run: pnpm exec tsc --noEmit --project tsconfig.json
+        working-directory: apps/web
       - run: pnpm run build
+        working-directory: apps/web
       - run: sudo apt-get update
       - run: sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-      - run: cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
-      - run: cargo check --manifest-path src-tauri/Cargo.toml
+      - run: cargo fmt --manifest-path apps/web/src-tauri/Cargo.toml -- --check
+      - run: cargo check --manifest-path apps/web/src-tauri/Cargo.toml
