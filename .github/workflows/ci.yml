@@ -18,7 +18,7 @@ jobs:
           node-version: 22
       - run: pnpm --dir apps/web install
       - run: pnpm --dir apps/web test
-      - run: pnpm --dir apps/web exec tsc --noEmit --project tsconfig.json
+      - run: cd apps/web && node_modules/.bin/tsc --noEmit --project tsconfig.json
       - run: pnpm --dir apps/web run build
       - run: sudo apt-get update
       - run: sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
