@@ -84,3 +84,28 @@ create table if not exists audit_event (
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
+
+create table if not exists crm_automation_rule (
+  tenant_id uuid not null references workspace_tenant(id) on delete cascade,
+  rule_id text not null,
+  name text not null,
+  event_type text not null,
+  rule jsonb not null,
+  active boolean not null default true,
+  priority integer not null default 0,
+  updated_at timestamptz not null default now(),
+  primary key (tenant_id, rule_id)
+);
+
+create table if not exists crm_automation_execution (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references workspace_tenant(id) on delete cascade,
+  rule_id text not null,
+  event_type text not null,
+  record_id text not null,
+  matched boolean not null,
+  result jsonb not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists crm_automation_execution_tenant_record_idx on crm_automation_execution (tenant_id, record_id, created_at desc);
