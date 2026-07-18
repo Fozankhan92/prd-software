@@ -5,12 +5,16 @@ import { executeAutomationActions, type AutomationHandlers } from './automation-
 export async function processAutomationEvent(repository: AutomationRepository, handlers: AutomationHandlers, event: AutomationEvent): Promise<number> {
   const rules = await repository.listRules(event.tenantId);
   const results = runAutomations(rules, event);
+  let processed = 0;
   for (const result of results) {
     const execution = executionFromEvent(event, result);
+    const previous = await repository.listExecutions(event.tenantId, event.recordId);
+    if (previous.some((item) => item.executionKey === execution.executionKey)) continue;
     await repository.recordExecution(execution);
     await executeAutomationActions(result.actions, event, handlers);
+    processed += 1;
   }
-  return results.length;
+  return processed;
 }
 
 export function createAutomationScheduler(repository: AutomationRepository, handlers: AutomationHandlers) {
