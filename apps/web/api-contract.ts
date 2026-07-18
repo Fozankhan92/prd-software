@@ -1,4 +1,20 @@
-import type { WebWorkspaceState } from './app/web-store';
+// Keep the transport contract independent from the browser store so the API
+// boundary can be type-checked in isolation by CI and server tooling.
+export type WebWorkspaceState = {
+  organization: string;
+  adminName: string;
+  tenantId: string;
+  session: unknown;
+  records: unknown[];
+  permissions: unknown[];
+  files: unknown[];
+  lineItems: unknown[];
+  approvals: unknown[];
+  portalShares: unknown[];
+  campaignMembers: unknown[];
+  customFields: string[];
+  customPipelineStages: string[];
+};
 
 export type WorkspaceApiError = { code: 'UNAUTHENTICATED' | 'FORBIDDEN' | 'VALIDATION_ERROR' | 'CONFLICT' | 'SERVER_ERROR'; message: string };
 export type WorkspaceApiResponse<T> = { data: T; requestId: string } | { error: WorkspaceApiError; requestId: string };
