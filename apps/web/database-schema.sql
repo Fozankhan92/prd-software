@@ -103,9 +103,12 @@ create table if not exists crm_automation_execution (
   rule_id text not null,
   event_type text not null,
   record_id text not null,
+  execution_key text,
   matched boolean not null,
   result jsonb not null,
   created_at timestamptz not null default now()
 );
+
+create unique index if not exists crm_automation_execution_key_idx on crm_automation_execution (tenant_id, execution_key) where execution_key is not null;
 
 create index if not exists crm_automation_execution_tenant_record_idx on crm_automation_execution (tenant_id, record_id, created_at desc);
