@@ -78,3 +78,4 @@ button, input, select { font: inherit; }
 .web-data-table .web-record summary::after { content: '—'; grid-column: 3; color: #738096; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .web-data-table .web-record[open] summary { background: rgba(237,244,255,.66); }
 .web-data-table .web-record__details { min-width: 780px; padding: 0 14px 15px 54px; background: rgba(248,251,255,.62); }
+/* Keep the enterprise table surface stable while the workspace data grows. */
