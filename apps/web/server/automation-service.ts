@@ -1,7 +1,7 @@
 export type AutomationEvent = { tenantId: string; type: string; recordId: string; fields: Record<string, string | number | boolean> };
 export type AutomationCondition = { field: string; operator: 'equals' | 'not_equals' | 'contains' | 'greater_than'; value: string | number | boolean };
-export type AutomationAction = { type: 'notify' | 'create-task' | 'request-approval'; target: string; message: string };
-export type AutomationRule = { id: string; name: string; eventType: string; conditions: AutomationCondition[]; actions: AutomationAction[]; active: boolean };
+export type AutomationAction = { type: 'notify' | 'create-task' | 'request-approval' | 'assign-owner' | 'score-lead' | 'update-forecast' | 'calculate-commission' | 'map-relationship' | 'share-portal' | 'refresh-analytics'; target: string; message: string; value?: string | number };
+export type AutomationRule = { id: string; name: string; eventType: string; conditions: AutomationCondition[]; actions: AutomationAction[]; active: boolean; priority?: number; runOncePerRecord?: boolean };
 export type AutomationResult = { ruleId: string; matched: boolean; actions: AutomationAction[] };
 
 export function evaluateAutomation(rule: AutomationRule, event: AutomationEvent): AutomationResult {
