@@ -5,7 +5,14 @@ export type WebCrmRecord = {
   detail: string;
   status: string;
   createdAt: string;
+  archivedAt?: string;
+  /** Structured values for filtering, exports, and integrations. Legacy detail remains readable. */
+  fields?: Record<string, string>;
+  relationships?: string[];
+  history?: WebCrmHistoryEvent[];
 };
+
+export type WebCrmHistoryEvent = { at: string; action: string; actor: string; summary: string };
 
 export type WebWorkspaceState = {
   organization: string;
@@ -69,8 +76,9 @@ export function saveWebWorkspace(state: WebWorkspaceState): void {
   if (canUseStorage()) window.localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
-export function createWebRecord(kind: WebCrmRecord['kind'], name: string, detail: string, status: string): WebCrmRecord {
-  return { id: crypto.randomUUID(), kind, name, detail, status, createdAt: new Date().toISOString() };
+export function createWebRecord(kind: WebCrmRecord['kind'], name: string, detail: string, status: string, fields: Record<string, string> = {}, relationships: string[] = []): WebCrmRecord {
+  const createdAt = new Date().toISOString();
+  return { id: crypto.randomUUID(), kind, name, detail, status, createdAt, fields, relationships, history: [{ at: createdAt, action: 'Created', actor: 'Current workspace user', summary: `${kind} created` }] };
 }
 
 export function openWebSession(tenantId: string, displayName: string): WebSession {
