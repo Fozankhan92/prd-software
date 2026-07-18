@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { desktopNavigation } from './module-navigation';
-import { createTenantId, createWebApproval, createWebCampaignMember, createWebFile, createWebLineItem, createWebPortalShare, createWebRecord, exportWorkspace, grantWebPermission, loadWebWorkspace, openWebSession, saveWebWorkspace, type WebCrmRecord, type WebWorkspaceState } from './web-store';
+import { bulkUpdateWebRecords, createTenantId, createWebApproval, createWebCampaignMember, createWebFile, createWebLineItem, createWebPortalShare, createWebRecord, duplicateWebRecord, exportWorkspace, grantWebPermission, loadWebWorkspace, openWebSession, saveWebWorkspace, type WebCrmRecord, type WebWorkspaceState } from './web-store';
 import './web-app.css';
+import { importCrmText } from './crm-import';
 
 type ModuleId = (typeof desktopNavigation)[number]['id'];
 
@@ -135,6 +136,7 @@ export function WebApp() {
   const [permissionResource, setPermissionResource] = useState('');
   const [permissionEdit, setPermissionEdit] = useState(false);
   const [message, setMessage] = useState('');
+  const [selectedRecordIds, setSelectedRecordIds] = useState<string[]>([]);
 
   const crmRecords = useMemo(() => workspace.records.filter((record) => !record.archivedAt), [workspace.records]);
   const archivedCrmRecords = useMemo(() => workspace.records.filter((record) => record.archivedAt), [workspace.records]);
@@ -167,7 +169,7 @@ export function WebApp() {
     if (expandedRecordFilter === 'unassigned') records = records.filter((record) => expandedRecordValue(record, 'Owner') === '—');
     if (expandedRecordFilter === 'detailed') records = records.filter((record) => expandedRecordValue(record, 'Details') !== '—');
     const query = expandedRecordQuery.trim().toLowerCase();
-    if (query) records = records.filter((record) => `${record.name} ${record.status} ${record.detail} ${recordLabels[record.kind]}`.toLowerCase().includes(query));
+    if (query) records = records.filter((record) => `${record.name} ${record.status} ${record.detail} ${recordLabels[record.kind]} ${Object.values(record.fields ?? {}).join(' ')} ${(record.relationships ?? []).join(' ')}`.toLowerCase().includes(query));
     return [...records].sort((a, b) => expandedRecordSort === 'name' ? a.name.localeCompare(b.name) : expandedRecordSort === 'status' ? a.status.localeCompare(b.status) : expandedRecordSort === 'oldest' ? a.createdAt.localeCompare(b.createdAt) : b.createdAt.localeCompare(a.createdAt));
   }, [crmViewRecords, expandedRecordFilter, expandedRecordQuery, expandedRecordSort]);
   const selectedCustomer = workspace.records.find((record) => record.id === selectedCustomerId);
@@ -373,6 +375,37 @@ export function WebApp() {
     saveWorkspace({ ...workspace, records: workspace.records.filter((item) => item.id !== recordId) }, `${recordLabels[record.kind]} deleted.`);
   }
 
+  function duplicateRecord(record: WebCrmRecord) {
+    const copy = duplicateWebRecord(record);
+    saveWorkspace({ ...workspace, records: [copy, ...workspace.records] }, `${recordLabels[record.kind]} duplicated. Update the copy before sharing it.`);
+  }
+
+  function bulkSetRecordStatus(status: string) {
+    if (!selectedRecordIds.length) return setMessage('Select at least one CRM record first.');
+    saveWorkspace({ ...workspace, records: bulkUpdateWebRecords(workspace.records, selectedRecordIds, { status }) }, `${selectedRecordIds.length} CRM record(s) updated.`);
+    setSelectedRecordIds([]);
+  }
+
+  async function importCrmFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    const extension = file.name.toLowerCase().split('.').pop();
+    if (!['csv', 'tsv', 'json'].includes(extension ?? '')) {
+      setMessage('Import CSV, TSV, JSON, or export your Excel sheet as CSV first. Native XLSX parsing will be connected to the cloud import adapter.');
+      return;
+    }
+    try {
+      const imported = importCrmText(await file.text(), extension as 'csv' | 'tsv' | 'json');
+      if (!imported.length) return setMessage('No CRM rows were found in that file. Include a Name column and one row per record.');
+      const existing = new Set(workspace.records.map((record) => `${record.kind}:${record.name.toLowerCase()}`));
+      const unique = imported.filter((record) => !existing.has(`${record.kind}:${record.name.toLowerCase()}`));
+      saveWorkspace({ ...workspace, records: [...unique, ...workspace.records] }, `${unique.length} CRM record(s) imported and added to Expanded CRM Data.`);
+    } catch {
+      setMessage('The import file could not be read. Check that it is valid CSV, TSV, or JSON.');
+    }
+  }
+
   function startEditingRecord(record: WebCrmRecord) {
     setEditingRecordId(record.id);
     setEditRecordName(record.name);
@@ -541,6 +574,8 @@ export function WebApp() {
 
           {activeModule !== 'home' && activeModule !== 'crm' ? <section className="web-card web-placeholder"><span className="web-placeholder__icon">{desktopNavigation.find((item) => item.id === activeModule)?.label.slice(0, 1)}</span><h3>{desktopNavigation.find((item) => item.id === activeModule)?.label} foundation</h3><p>{moduleDescriptions[activeModule]} The web foundation is ready for its detailed forms, workflows, reports, and permission-aware database services.</p><button type="button" className="web-button web-button--secondary" onClick={() => setMessage('This module is queued for its detailed web workflow.')}>Plan module workflow</button></section> : null}
           {activeModule === 'admin' ? <section className="web-card web-approval-inbox"><div className="web-card__heading"><div><p className="web-app__eyebrow">Phase 2 controls</p><h3>Approval inbox</h3></div><span className="web-card__hint">{workspace.approvals.filter((item) => item.status === 'Pending').length} pending</span></div><div className="web-records">{workspace.approvals.length ? workspace.approvals.map((approval) => <article key={approval.id}><span className="web-record-icon">{approval.status === 'Pending' ? '!' : approval.status.slice(0, 1)}</span><div><strong>{approval.requestedAction}</strong><small>{approval.recordType} · {approval.status} · requested {new Date(approval.requestedAt).toLocaleString()}</small>{approval.status === 'Pending' ? <div><button className="web-button web-button--secondary" type="button" onClick={() => setApprovalStatus(approval.id, 'Approved')}>Approve</button><button className="web-button web-button--danger" type="button" onClick={() => setApprovalStatus(approval.id, 'Rejected')}>Reject</button></div> : null}</div></article>) : <div className="web-empty">No approval requests yet.</div>}</div></section> : null}
+          {activeModule === 'crm' && crmView !== 'overview' && crmView !== 'automation' ? <section className="web-card web-bulk-actions"><div className="web-card__heading"><div><p className="web-app__eyebrow">Enterprise record tools</p><h3>Bulk actions</h3></div><span className="web-card__hint">{selectedRecordIds.length} selected</span></div><div className="web-records">{visibleCrmViewRecords.slice(0, 10).map((record) => <label className="web-checkbox" key={record.id}><input type="checkbox" checked={selectedRecordIds.includes(record.id)} onChange={(event) => setSelectedRecordIds(event.target.checked ? [...selectedRecordIds, record.id] : selectedRecordIds.filter((id) => id !== record.id))} /><span>{record.name} · {recordLabels[record.kind]}</span></label>)}</div><div className="web-record__actions"><button className="web-button web-button--secondary" type="button" onClick={() => bulkSetRecordStatus('Working')}>Mark working</button><button className="web-button web-button--secondary" type="button" onClick={() => bulkSetRecordStatus('Completed')}>Mark completed</button><button className="web-button web-button--quiet" type="button" onClick={() => setSelectedRecordIds([])}>Clear selection</button></div></section> : null}
+          {activeModule === 'crm' ? <section className="web-card web-import-card"><div className="web-card__heading"><div><p className="web-app__eyebrow">CRM data onboarding</p><h3>Import CRM data</h3><p className="web-card__description">Import rows into the selected CRM workspace. Mapped fields, relationships, dates, amounts, ownership, and history appear in Expanded CRM Data and Customer 360.</p></div><span className="web-card__hint">CSV · TSV · JSON</span></div><label className="web-file-drop">Choose CRM import file<input type="file" accept=".csv,.tsv,.json,.xlsx,.xls" onChange={importCrmFile} /></label><small className="web-card__description">For Excel workbooks, export the sheet as CSV to preserve column mapping. Duplicate name/type rows are skipped.</small></section> : null}
           {message ? <p className="web-message" role="status">{message}</p> : null}
         </section>
       </main>
