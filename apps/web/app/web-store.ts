@@ -81,6 +81,22 @@ export function createWebRecord(kind: WebCrmRecord['kind'], name: string, detail
   return { id: crypto.randomUUID(), kind, name, detail, status, createdAt, fields, relationships, history: [{ at: createdAt, action: 'Created', actor: 'Current workspace user', summary: `${kind} created` }] };
 }
 
+export function duplicateWebRecord(record: WebCrmRecord): WebCrmRecord {
+  const createdAt = new Date().toISOString();
+  return { ...record, id: crypto.randomUUID(), name: `${record.name} (Copy)`, createdAt, archivedAt: undefined, fields: { ...(record.fields ?? {}) }, relationships: [...(record.relationships ?? [])], history: [...(record.history ?? []), { at: createdAt, action: 'Duplicated', actor: 'Current workspace user', summary: `Copied from ${record.id}` }] };
+}
+
+export function bulkUpdateWebRecords(records: WebCrmRecord[], ids: string[], changes: Partial<Pick<WebCrmRecord, 'status' | 'archivedAt'>>): WebCrmRecord[] {
+  const selected = new Set(ids);
+  const at = new Date().toISOString();
+  return records.map((record) => selected.has(record.id) ? { ...record, ...changes, history: [...(record.history ?? []), { at, action: 'Bulk updated', actor: 'Current workspace user', summary: Object.keys(changes).join(', ') || 'Record updated' }] } : record);
+}
+
+export function mergeWebRecords(primary: WebCrmRecord, duplicate: WebCrmRecord): WebCrmRecord {
+  const at = new Date().toISOString();
+  return { ...primary, fields: { ...(duplicate.fields ?? {}), ...(primary.fields ?? {}) }, relationships: [...new Set([...(primary.relationships ?? []), ...(duplicate.relationships ?? [])])], history: [...(primary.history ?? []), ...(duplicate.history ?? []), { at, action: 'Merged', actor: 'Current workspace user', summary: `Merged duplicate ${duplicate.id}` }] };
+}
+
 export function openWebSession(tenantId: string, displayName: string): WebSession {
   return { id: crypto.randomUUID(), tenantId, userId: crypto.randomUUID(), displayName, openedAt: new Date().toISOString() };
 }
